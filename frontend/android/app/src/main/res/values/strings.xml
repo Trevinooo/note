@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">QuickNote 速记通</string>
+    <string name="title_activity_main">QuickNote 速记通</string>
+    <string name="package_name">com.quicknote.app</string>
+    <string name="custom_url_scheme">com.quicknote.app</string>
+</resources>

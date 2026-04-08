@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理后台 - QuickNote 速记通</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    :root {
+      --primary: #6C63FF; --primary-light: #8B83FF; --primary-dark: #5A52E0;
+      --secondary: #00D2FF; --accent: #10b981;
+      --bg-body: #f0f2f5; --bg-card: #fff; --text-primary: #1e293b;
+      --text-secondary: #64748b; --text-muted: #94a3b8;
+      --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --info: #3b82f6;
+      --border-color: #e2e8f0;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06); --shadow-md: 0 4px 12px rgba(0,0,0,0.07);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.1);
+      --transition: all .3s cubic-bezier(.4,0,.2,1);
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg-body);color:var(--text-primary);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#f1f5f9}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:var(--transition);text-decoration:none;white-space:nowrap;font-family:inherit}
+    .btn-primary{background:linear-gradient(135deg,#6C63FF,#00D2FF);color:#fff;box-shadow:0 4px 15px rgba(108,99,255,.25)}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 25px rgba(108,99,255,.35)}
+    .btn-secondary{background:#f1f5f9;color:var(--text-primary);border:1px solid var(--border-color)}
+    .btn-secondary:hover{border-color:var(--primary);color:var(--primary)}
+    .btn-danger{background:linear-gradient(135deg,#ef4444,#f87171);color:#fff}
+    .btn-sm{padding:6px 14px;font-size:13px}
+
+    .card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:24px;box-shadow:var(--shadow-sm);transition:var(--transition)}
+    .card:hover{box-shadow:var(--shadow-md)}
+    .card-title{font-size:18px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+
+    .form-group{margin-bottom:20px}
+    .form-label{display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:6px}
+    .form-input,.form-select,.form-textarea{width:100%;padding:12px 16px;background:#fff;border:1px solid var(--border-color);border-radius:8px;color:var(--text-primary);font-size:14px;font-family:inherit;transition:var(--transition);outline:none}
+    .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(108,99,255,.1)}
+    .form-textarea{min-height:100px;resize:vertical}
+    .form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+
+    .table-wrapper{overflow-x:auto;border-radius:12px;border:1px solid var(--border-color)}
+    table{width:100%;border-collapse:collapse}
+    thead th{background:#f8fafc;padding:12px 16px;text-align:left;font-size:13px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid var(--border-color);white-space:nowrap}
+    tbody td{padding:12px 16px;font-size:14px;border-bottom:1px solid #f1f5f9}
+    tbody tr:hover{background:#f8fafc}
+
+    .badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500}
+    .badge-success{background:#ecfdf5;color:#059669}.badge-warning{background:#fefce8;color:#d97706}
+    .badge-danger{background:#fef2f2;color:#dc2626}.badge-info{background:#eff6ff;color:#2563eb}
+    .badge-primary{background:#eef2ff;color:var(--primary)}
+
+    .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.35);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center}
+    .modal-overlay.active{display:flex}
+    .modal{background:#fff;border:1px solid var(--border-color);border-radius:16px;padding:32px;width:90%;max-width:600px;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:modalIn .3s ease}
+    @keyframes modalIn{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+    .modal-header h3{font-size:20px;font-weight:600}
+    .modal-close{width:36px;height:36px;border:none;background:#f1f5f9;border-radius:50%;color:var(--text-secondary);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+    .modal-close:hover{background:var(--danger);color:#fff}
+
+    .toast{position:fixed;top:20px;right:20px;padding:14px 24px;border-radius:8px;color:#fff;font-size:14px;z-index:9999;animation:slideIn .3s ease,fadeOut .3s ease 2.7s forwards;max-width:400px;box-shadow:var(--shadow-lg)}
+    .toast-success{background:linear-gradient(135deg,#10b981,#059669)}.toast-error{background:linear-gradient(135deg,#ef4444,#dc2626)}
+    @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+    @keyframes fadeOut{to{opacity:0;transform:translateY(-20px)}}
+
+    .admin-layout{min-height:100vh;background:var(--bg-body)}
+    .admin-nav{background:rgba(255,255,255,.98);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-color);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 6px rgba(0,0,0,.04)}
+    .admin-nav .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text-primary)}
+    .admin-nav .brand-text{font-size:17px;font-weight:700;background:linear-gradient(135deg,#6C63FF,#00D2FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .admin-nav .nav-right{display:flex;align-items:center;gap:16px}
+    .admin-nav .user-info{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text-secondary)}
+    .admin-nav .user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#6C63FF,#00D2FF);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff}
+    .logout-btn-nav{color:var(--text-muted);text-decoration:none;font-size:13px;cursor:pointer;padding:6px 12px;border-radius:6px;border:none;background:none;transition:var(--transition);font-family:inherit}
+    .logout-btn-nav:hover{background:#fef2f2;color:var(--danger)}
+
+    .admin-tabs{background:#fff;border-bottom:1px solid var(--border-color);padding:0 40px;display:flex;gap:0;overflow-x:auto}
+    .admin-tab{display:flex;align-items:center;gap:8px;padding:14px 18px;font-size:14px;font-weight:500;color:var(--text-secondary);cursor:pointer;border-bottom:2px solid transparent;transition:var(--transition);white-space:nowrap;border-top:none;border-left:none;border-right:none;background:none;font-family:inherit}
+    .admin-tab:hover{color:var(--primary);background:rgba(108,99,255,.03)}
+    .admin-tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+    .admin-tab svg{width:18px;height:18px;flex-shrink:0}
+
+    .admin-body{max-width:1200px;margin:0 auto;padding:28px 40px}
+    .admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    .admin-stat{background:#fff;border:1px solid var(--border-color);border-radius:16px;padding:20px;display:flex;align-items:center;gap:16px;transition:var(--transition)}
+    .admin-stat:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+    .admin-stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .admin-stat-icon svg{width:24px;height:24px;color:#fff}
+    .admin-stat-icon.c1{background:linear-gradient(135deg,#6C63FF,#8B83FF)}
+    .admin-stat-icon.c2{background:linear-gradient(135deg,#10b981,#34d399)}
+    .admin-stat-icon.c3{background:linear-gradient(135deg,#00D2FF,#4facfe)}
+    .admin-stat-icon.c4{background:linear-gradient(135deg,#f59e0b,#fbbf24)}
+    .admin-stat .num{font-size:26px;font-weight:700}
+    .admin-stat .label{font-size:13px;color:var(--text-secondary)}
+
+    .section{display:none}.section.active{display:block}
+    .page-header{margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+    .page-title{font-size:24px;font-weight:700;margin-bottom:4px}
+    .page-subtitle{color:var(--text-secondary);font-size:14px}
+
+    .filter-group{display:flex;gap:8px;margin-bottom:16px}
+    .filter-btn{padding:6px 16px;border-radius:20px;font-size:13px;font-weight:500;border:1px solid var(--border-color);background:#fff;color:var(--text-secondary);cursor:pointer;transition:var(--transition);font-family:inherit}
+    .filter-btn:hover{border-color:var(--primary);color:var(--primary)}
+    .filter-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+    .stat-bar{display:flex;height:24px;border-radius:12px;overflow:hidden;margin:8px 0;background:#f1f5f9}
+    .stat-bar-seg{height:100%;transition:var(--transition)}
+
+    .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+    .color-dot{width:16px;height:16px;border-radius:50%;display:inline-block;vertical-align:middle}
+
+    @media(max-width:768px){.admin-nav,.admin-tabs,.admin-body{padding-left:16px;padding-right:16px}.admin-stats{grid-template-columns:1fr 1fr}.admin-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- 顶部导航 -->
+    <nav class="admin-nav">
+      <a href="#" class="brand">
+        <svg viewBox="0 0 32 32" fill="none" width="32" height="32"><rect width="32" height="32" rx="8" fill="url(#ga)"/><path d="M10 16h12M16 10v12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/><defs><linearGradient id="ga" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#6C63FF"/><stop offset="1" stop-color="#00D2FF"/></linearGradient></defs></svg>
+        <span class="brand-text">QuickNote 管理后台</span>
+      </a>
+      <div class="nav-right">
+        <div class="user-info"><span id="userName">管理员</span><div class="user-avatar" id="userAvatar">A</div></div>
+        <button class="logout-btn-nav" onclick="logout()">退出</button>
+      </div>
+    </nav>
+
+    <!-- Tab 标签 -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-section="sec-home" onclick="switchTab(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>系统概览</button>
+      <button class="admin-tab" data-section="sec-users" onclick="switchTab(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>用户管理</button>
+      <button class="admin-tab" data-section="sec-tags" onclick="switchTab(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>标签管理</button>
+      <button class="admin-tab" data-section="sec-stats" onclick="switchTab(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>数据统计</button>
+      <button class="admin-tab" data-section="sec-templates" onclick="switchTab(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>模板管理</button>
+      <button class="admin-tab" data-section="sec-settings" onclick="switchTab(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>系统设置</button>
+    </div>
+
+    <div class="admin-body">
+      <!-- ===== 系统概览 ===== -->
+      <div class="section active" id="sec-home">
+        <div class="page-header"><div><h1 class="page-title">系统概览</h1><p class="page-subtitle">QuickNote 速记通 · 数据一览</p></div></div>
+        <div class="admin-stats">
+          <div class="admin-stat"><div class="admin-stat-icon c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="num" id="sUsers">0</div><div class="label">总用户数</div></div></div>
+          <div class="admin-stat"><div class="admin-stat-icon c2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="num" id="sNotes">0</div><div class="label">笔记总量</div></div></div>
+          <div class="admin-stat"><div class="admin-stat-icon c3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><div class="num" id="sSchedules">0</div><div class="label">日程总数</div></div></div>
+          <div class="admin-stat"><div class="admin-stat-icon c4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div><div><div class="num" id="sPremium">0</div><div class="label">付费用户</div></div></div>
+        </div>
+        <div class="admin-grid">
+          <div class="card"><div class="card-title">📊 用户分布</div><div id="roleChart"></div></div>
+          <div class="card"><div class="card-title">📝 笔记分类</div><div id="categoryChart"></div></div>
+        </div>
+      </div>
+
+      <!-- ===== 用户管理 ===== -->
+      <div class="section" id="sec-users">
+        <div class="page-header"><div><h1 class="page-title">用户管理</h1></div></div>
+        <div class="filter-group">
+          <button class="filter-btn active" onclick="filterUsers(this)">全部</button>
+          <button class="filter-btn" onclick="filterUsers(this,'user')">普通用户</button>
+          <button class="filter-btn" onclick="filterUsers(this,'premium')">高级用户</button>
+          <button class="filter-btn" onclick="filterUsers(this,'admin')">管理员</button>
+        </div>
+        <div class="card"><div class="table-wrapper"><table><thead><tr><th>ID</th><th>用户名</th><th>昵称</th><th>角色</th><th>注册时间</th><th>操作</th></tr></thead><tbody id="usersBody"></tbody></table></div></div>
+      </div>
+
+      <!-- ===== 标签管理 ===== -->
+      <div class="section" id="sec-tags">
+        <div class="page-header"><div><h1 class="page-title">标签管理</h1></div>
+          <button class="btn btn-primary" onclick="openModal('tagModal')">+ 新增标签</button></div>
+        <div class="card"><div class="table-wrapper"><table><thead><tr><th>颜色</th><th>标签名</th><th>使用次数</th><th>创建时间</th><th>操作</th></tr></thead><tbody id="tagsBody"></tbody></table></div></div>
+      </div>
+
+      <!-- ===== 数据统计 ===== -->
+      <div class="section" id="sec-stats">
+        <div class="page-header"><div><h1 class="page-title">数据统计</h1><p class="page-subtitle">管理员只能查看笔记数量，不能查看内容</p></div></div>
+        <div class="admin-stats" style="grid-template-columns:repeat(3,1fr)">
+          <div class="admin-stat"><div class="admin-stat-icon c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></div><div><div class="num" id="statTotal">0</div><div class="label">笔记总量</div></div></div>
+          <div class="admin-stat"><div class="admin-stat-icon c2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><div class="num" id="statByUserCount">0</div><div class="label">活跃用户</div></div></div>
+          <div class="admin-stat"><div class="admin-stat-icon c4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="num" id="statCategories">0</div><div class="label">笔记分类数</div></div></div>
+        </div>
+        <div class="admin-grid">
+          <div class="card"><div class="card-title">📋 用户笔记排行</div><div class="table-wrapper"><table><thead><tr><th>用户</th><th>昵称</th><th>笔记数</th></tr></thead><tbody id="noteRankBody"></tbody></table></div></div>
+          <div class="card"><div class="card-title">🏷️ 分类统计</div><div class="table-wrapper"><table><thead><tr><th>分类</th><th>笔记数</th><th>占比</th></tr></thead><tbody id="categoryBody"></tbody></table></div></div>
+        </div>
+      </div>
+
+      <!-- ===== 模板管理 ===== -->
+      <div class="section" id="sec-templates">
+        <div class="page-header"><div><h1 class="page-title">模板管理</h1></div>
+          <button class="btn btn-primary" onclick="openModal('templateModal')">+ 新增模板</button></div>
+        <div class="card"><div class="table-wrapper"><table><thead><tr><th>模板名称</th><th>分类</th><th>使用次数</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead><tbody id="templatesBody"></tbody></table></div></div>
+      </div>
+
+      <!-- ===== 系统设置 ===== -->
+      <div class="section" id="sec-settings">
+        <div class="page-header"><div><h1 class="page-title">系统设置</h1><p class="page-subtitle">配置 AI 模型和系统参数</p></div></div>
+        <div class="card" style="max-width:700px">
+          <div class="card-title">🤖 AI 模型配置</div>
+          <div class="form-group"><label class="form-label">AI 服务商</label>
+            <select class="form-select" id="setProvider"><option value="deepseek">DeepSeek</option><option value="openai">OpenAI (GPT)</option><option value="chatglm">ChatGLM (智谱)</option><option value="other">其他</option></select></div>
+          <div class="form-group"><label class="form-label">API Base URL</label><input class="form-input" id="setBaseUrl" placeholder="https://api.deepseek.com"/></div>
+          <div class="form-group"><label class="form-label">API Key</label><input class="form-input" id="setApiKey" type="password" placeholder="sk-..."/></div>
+          <div class="form-group"><label class="form-label">模型名称</label><input class="form-input" id="setModel" placeholder="deepseek-chat"/></div>
+          <button class="btn btn-primary" onclick="saveSettings()">💾 保存设置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模态框: 标签 -->
+  <div class="modal-overlay" id="tagModal"><div class="modal"><div class="modal-header"><h3>新增标签</h3><button class="modal-close" onclick="closeModal('tagModal')">×</button></div>
+    <form onsubmit="return createTag(event)">
+      <div class="form-group"><label class="form-label">标签名</label><input class="form-input" id="tagName" required></div>
+      <div class="form-group"><label class="form-label">颜色</label><input class="form-input" id="tagColor" type="color" value="#6C63FF" style="height:44px;padding:4px"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">创建</button></form></div></div>
+
+  <!-- 模态框: 模板 -->
+  <div class="modal-overlay" id="templateModal"><div class="modal"><div class="modal-header"><h3>新增模板</h3><button class="modal-close" onclick="closeModal('templateModal')">×</button></div>
+    <form onsubmit="return createTemplate(event)">
+      <div class="form-group"><label class="form-label">模板名称</label><input class="form-input" id="tplName" required></div>
+      <div class="form-group"><label class="form-label">分类</label><input class="form-input" id="tplCategory" placeholder="通用"></div>
+      <div class="form-group"><label class="form-label">模板内容</label><textarea class="form-textarea" id="tplContent" style="min-height:150px"></textarea></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">创建</button></form></div></div>
+
+  <!-- 模态框: 编辑用户 -->
+  <div class="modal-overlay" id="editUserModal"><div class="modal"><div class="modal-header"><h3>编辑用户</h3><button class="modal-close" onclick="closeModal('editUserModal')">×</button></div>
+    <form onsubmit="return updateUser(event)">
+      <input type="hidden" id="editUserId">
+      <div class="form-group"><label class="form-label">昵称</label><input class="form-input" id="editNickname"></div>
+      <div class="form-group"><label class="form-label">角色</label><select class="form-select" id="editRole"><option value="user">普通用户</option><option value="premium">高级用户</option><option value="admin">管理员</option></select></div>
+      <button type="submit" class="btn btn-primary" style="width:100%">保存</button></form></div></div>
+
+  <script>
+    const API_BASE = '/api';
+    let TOKEN = localStorage.getItem('admin_token') || '';
+
+    // ===== 通用 =====
+    async function apiFetch(url, opt = {}) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (TOKEN) headers['Authorization'] = `Bearer ${TOKEN}`;
+      const res = await fetch(API_BASE + url, { ...opt, headers });
+      return res.json();
+    }
+    const apiGet = url => apiFetch(url);
+    const apiPost = (url, body) => apiFetch(url, { method: 'POST', body: JSON.stringify(body) });
+    const apiPut = (url, body) => apiFetch(url, { method: 'PUT', body: JSON.stringify(body) });
+    const apiDelete = url => apiFetch(url, { method: 'DELETE' });
+
+    function toast(msg, type = 'success') {
+      const d = document.createElement('div');
+      d.className = `toast toast-${type}`;
+      d.textContent = msg;
+      document.body.appendChild(d);
+      setTimeout(() => d.remove(), 3000);
+    }
+
+    function fmtDate(s) { if (!s) return '-'; return new Date(s).toLocaleString('zh-CN', { year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit' }); }
+
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function switchTab(el) {
+      document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById(el.dataset.section)?.classList.add('active');
+    }
+    const roleLabel = r => r === 'admin' ? '管理员' : r === 'premium' ? '高级用户' : '普通用户';
+    const roleBadge = r => r === 'admin' ? 'danger' : r === 'premium' ? 'warning' : 'primary';
+
+    // ===== 登录检查 =====
+    async function ensureLogin() {
+      if (!TOKEN) {
+        const u = prompt('管理员用户名：', 'admin');
+        const p = prompt('密码：', 'admin123');
+        const res = await apiPost('/auth/login', { username: u, password: p });
+        if (res.code === 200 && res.data.user.role === 'admin') {
+          TOKEN = res.data.token;
+          localStorage.setItem('admin_token', TOKEN);
+          document.getElementById('userName').textContent = res.data.user.nickname || res.data.user.username;
+          document.getElementById('userAvatar').textContent = (res.data.user.nickname || 'A')[0];
+        } else {
+          alert(res.message || '登录失败或非管理员');
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function logout() {
+      TOKEN = '';
+      localStorage.removeItem('admin_token');
+      location.reload();
+    }
+
+    // ===== 概览 =====
+    async function loadStats() {
+      const res = await apiGet('/admin/stats');
+      if (res?.code === 200) {
+        const d = res.data;
+        document.getElementById('sUsers').textContent = d.totalUsers;
+        document.getElementById('sNotes').textContent = d.totalNotes;
+        document.getElementById('sSchedules').textContent = d.totalSchedules;
+        document.getElementById('sPremium').textContent = d.premiumUsers;
+
+        // 角色分布
+        const total = d.totalUsers || 1;
+        document.getElementById('roleChart').innerHTML = `
+          <div class="stat-bar"><div class="stat-bar-seg" style="width:${d.normalUsers/total*100}%;background:#6C63FF"></div><div class="stat-bar-seg" style="width:${d.premiumUsers/total*100}%;background:#f59e0b"></div><div class="stat-bar-seg" style="width:${d.adminUsers/total*100}%;background:#ef4444"></div></div>
+          <div style="display:flex;gap:16px;font-size:13px;color:var(--text-secondary);margin-top:8px">
+            <span>🟣 普通 ${d.normalUsers}</span><span>🟡 高级 ${d.premiumUsers}</span><span>🔴 管理 ${d.adminUsers}</span></div>`;
+
+        // 笔记分类
+        const cats = d.categoryStats || [];
+        document.getElementById('categoryChart').innerHTML = cats.length > 0 ? cats.map(c =>
+          `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:14px">${c.category}</span><span class="badge badge-primary">${c.count} 条</span></div>`
+        ).join('') : '<div style="color:#94a3b8;padding:20px;text-align:center">暂无数据</div>';
+      }
+    }
+
+    // ===== 用户管理 =====
+    function filterUsers(el, role) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      loadUsers(role);
+    }
+
+    async function loadUsers(role) {
+      const url = role ? `/admin/users?role=${role}` : '/admin/users';
+      const res = await apiGet(url);
+      if (res?.code === 200) {
+        document.getElementById('usersBody').innerHTML = res.data.map(u => `<tr>
+          <td>${u.id}</td><td>${u.username}</td><td>${u.nickname || '-'}</td>
+          <td><span class="badge badge-${roleBadge(u.role)}">${roleLabel(u.role)}</span></td>
+          <td>${fmtDate(u.created_at)}</td>
+          <td>
+            <button class="btn btn-sm btn-secondary" onclick="editUser(${u.id},'${u.nickname||''}','${u.role}')">编辑</button>
+            <button class="btn btn-sm btn-secondary" onclick="resetPwd(${u.id})">重置密码</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">删除</button>
+          </td></tr>`).join('');
+      }
+    }
+
+    function editUser(id, nickname, role) {
+      document.getElementById('editUserId').value = id;
+      document.getElementById('editNickname').value = nickname;
+      document.getElementById('editRole').value = role;
+      openModal('editUserModal');
+    }
+    async function updateUser(e) {
+      e.preventDefault();
+      const id = document.getElementById('editUserId').value;
+      await apiPut(`/admin/users/${id}`, {
+        nickname: document.getElementById('editNickname').value,
+        role: document.getElementById('editRole').value
+      });
+      toast('更新成功'); closeModal('editUserModal'); loadUsers(); return false;
+    }
+    async function resetPwd(id) { if(confirm('确认重置密码为123456？')){ await apiPut(`/admin/users/${id}/password`,{password:'123456'}); toast('密码已重置'); }}
+    async function deleteUser(id) { if(confirm('确认删除？')){ const r=await apiDelete(`/admin/users/${id}`); if(r.code===200){toast('删除成功');loadUsers();}else toast(r.message,'error');}}
+
+    // ===== 标签管理 =====
+    async function loadTags() {
+      const res = await apiGet('/admin/tags');
+      if (res?.code === 200) {
+        document.getElementById('tagsBody').innerHTML = res.data.map(t => `<tr>
+          <td><span class="color-dot" style="background:${t.color}"></span></td>
+          <td>${t.name}</td><td>${t.usage_count}</td><td>${fmtDate(t.created_at)}</td>
+          <td><button class="btn btn-sm btn-danger" onclick="deleteTag(${t.id})">删除</button></td></tr>`).join('');
+      }
+    }
+    async function createTag(e) {
+      e.preventDefault();
+      await apiPost('/admin/tags', { name: document.getElementById('tagName').value, color: document.getElementById('tagColor').value });
+      toast('创建成功'); closeModal('tagModal'); loadTags(); return false;
+    }
+    async function deleteTag(id) { if(confirm('确认删除？')){ await apiDelete(`/admin/tags/${id}`); toast('删除成功'); loadTags();}}
+
+    // ===== 数据统计 =====
+    async function loadNoteStats() {
+      const res = await apiGet('/admin/notes-stats');
+      if (res?.code === 200) {
+        const d = res.data;
+        document.getElementById('statTotal').textContent = d.total;
+        const activeUsers = d.byUser.filter(u => u.note_count > 0);
+        document.getElementById('statByUserCount').textContent = activeUsers.length;
+        document.getElementById('statCategories').textContent = d.byCategory.length;
+
+        document.getElementById('noteRankBody').innerHTML = d.byUser.slice(0, 10).map(u =>
+          `<tr><td>${u.username}</td><td>${u.nickname || '-'}</td><td><span class="badge badge-primary">${u.note_count}</span></td></tr>`
+        ).join('') || '<tr><td colspan="3" style="text-align:center;color:#9ca3af">暂无数据</td></tr>';
+
+        const total = d.total || 1;
+        document.getElementById('categoryBody').innerHTML = d.byCategory.map(c =>
+          `<tr><td>${c.category}</td><td>${c.count}</td><td><div class="stat-bar" style="height:8px;width:120px"><div class="stat-bar-seg" style="width:${c.count/total*100}%;background:#6C63FF"></div></div></td></tr>`
+        ).join('') || '<tr><td colspan="3" style="text-align:center;color:#9ca3af">暂无数据</td></tr>';
+      }
+    }
+
+    // ===== 模板管理 =====
+    async function loadTemplates() {
+      const res = await apiGet('/admin/templates');
+      if (res?.code === 200) {
+        document.getElementById('templatesBody').innerHTML = res.data.map(t => `<tr>
+          <td>${t.name}</td><td>${t.category}</td><td>${t.usage_count}</td>
+          <td><span class="badge badge-${t.status==='active'?'success':'danger'}">${t.status==='active'?'启用':'停用'}</span></td>
+          <td>${fmtDate(t.created_at)}</td>
+          <td>
+            <button class="btn btn-sm btn-secondary" onclick="toggleTemplate(${t.id},'${t.status}')">${t.status==='active'?'停用':'启用'}</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteTemplate(${t.id})">删除</button>
+          </td></tr>`).join('');
+      }
+    }
+    async function createTemplate(e) {
+      e.preventDefault();
+      await apiPost('/admin/templates', { name: document.getElementById('tplName').value, category: document.getElementById('tplCategory').value || '通用', content: document.getElementById('tplContent').value });
+      toast('创建成功'); closeModal('templateModal'); loadTemplates(); return false;
+    }
+    async function toggleTemplate(id, status) { await apiPut(`/admin/templates/${id}`, { status: status==='active'?'disabled':'active' }); toast('更新成功'); loadTemplates(); }
+    async function deleteTemplate(id) { if(confirm('确认删除？')){ await apiDelete(`/admin/templates/${id}`); toast('删除成功'); loadTemplates();}}
+
+    // ===== 系统设置 =====
+    async function loadSettings() {
+      const res = await apiGet('/admin/settings');
+      if (res?.code === 200) {
+        const s = res.data;
+        document.getElementById('setProvider').value = s.ai_provider || 'deepseek';
+        document.getElementById('setBaseUrl').value = s.ai_base_url || '';
+        document.getElementById('setApiKey').value = s.ai_api_key || '';
+        document.getElementById('setModel').value = s.ai_model || '';
+      }
+    }
+    async function saveSettings() {
+      await apiPut('/admin/settings', {
+        ai_provider: document.getElementById('setProvider').value,
+        ai_base_url: document.getElementById('setBaseUrl').value,
+        ai_api_key: document.getElementById('setApiKey').value,
+        ai_model: document.getElementById('setModel').value
+      });
+      toast('设置已保存');
+    }
+
+    // ===== 初始化 =====
+    (async function init() {
+      if (await ensureLogin()) {
+        loadStats(); loadUsers(); loadTags(); loadNoteStats(); loadTemplates(); loadSettings();
+      }
+    })();
+  </script>
+</body>
+</html>
