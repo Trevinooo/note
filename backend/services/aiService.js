@@ -163,6 +163,30 @@ async function extractTodos(content, userId) {
     );
 }
 
+// 从语音转录文本中提取“时间 + 事件”，用于自动创建闹钟/日程
+async function extractScheduleFromTranscript(transcript, userId) {
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    return callAI(
+        `当前日期和时间是：${todayStr} ${timeStr}。\n` +
+        `请从下面的语音转录文本中提取用户想要“提醒/闹钟/日程”的信息，输出JSON数组。\n` +
+        `每一项包含字段：\n` +
+        `- title: 事件标题（必填，尽量简短）\n` +
+        `- description: 事件描述（可为空字符串）\n` +
+        `- start_time: 开始时间（格式YYYY-MM-DD HH:mm；若只提到日期不提时间，默认 09:00；若只提到时间不提日期，默认使用${todayStr}；若提到“今天/明天/后天/下周X”等，请据当前日期推算）\n` +
+        `- end_time: 结束时间（同格式；不确定则为null）\n` +
+        `- remind_at: 提醒时间（同格式；如果文本里有“提前10分钟/提前半小时”等，请计算；否则默认等于start_time；不确定则为null）\n` +
+        `- confidence: 0到1之间的小数，表示你对时间提取的置信度（不确定就低一些）\n` +
+        `规则：\n` +
+        `1) 如果文本里没有任何明确/可推断的提醒时间，则返回空数组[]。\n` +
+        `2) 只输出JSON，不要输出解释、Markdown、代码块。\n\n` +
+        `转录文本：\n${transcript}`,
+        `你是一个中文时间与事件抽取助手。你只输出严格JSON数组，不要输出任何多余文本。所有时间都必须是 YYYY-MM-DD HH:mm 格式或 null。`,
+        userId
+    );
+}
+
 async function planSchedule(content, userId) {
     const now = new Date();
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -245,4 +269,4 @@ async function generateKnowledgeGraph(notes, userId) {
     );
 }
 
-module.exports = { callAI, summarize, classify, extractTodos, planSchedule, generateMindMap, generateKnowledgeGraph };
+module.exports = { callAI, summarize, classify, extractTodos, extractScheduleFromTranscript, planSchedule, generateMindMap, generateKnowledgeGraph };

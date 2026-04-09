@@ -38,6 +38,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS schedules (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
+    note_id INTEGER,
     title TEXT NOT NULL,
     description TEXT DEFAULT '',
     start_time DATETIME,
@@ -46,7 +47,8 @@ db.exec(`
     source TEXT DEFAULT 'manual' CHECK(source IN ('manual','ai_extract','ai_plan')),
     status TEXT DEFAULT 'pending' CHECK(status IN ('pending','done')),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE SET NULL
   );
 
   CREATE TABLE IF NOT EXISTS tags (
@@ -90,6 +92,39 @@ db.exec(`
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
 `);
+
+// 兼容旧数据库：为 schedules 增加 note_id 并补齐外键
+// SQLite 对已存在表追加外键限制支持很弱，这里用“重建表”方式确保约束存在且不丢数据。
+const schedulesCols = db.prepare(`PRAGMA table_info('schedules')`).all();
+const hasNoteId = schedulesCols.some((c) => c.name === 'note_id');
+const schedulesFks = db.prepare(`PRAGMA foreign_key_list('schedules')`).all();
+const hasNoteFk = schedulesFks.some((fk) => fk.table === 'notes' && fk.from === 'note_id');
+if (!hasNoteId || !hasNoteFk) {
+  db.exec(`
+    BEGIN;
+    CREATE TABLE IF NOT EXISTS schedules__new (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      note_id INTEGER,
+      title TEXT NOT NULL,
+      description TEXT DEFAULT '',
+      start_time DATETIME,
+      end_time DATETIME,
+      remind_at DATETIME,
+      source TEXT DEFAULT 'manual' CHECK(source IN ('manual','ai_extract','ai_plan')),
+      status TEXT DEFAULT 'pending' CHECK(status IN ('pending','done')),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE SET NULL
+    );
+    INSERT INTO schedules__new (id, user_id, note_id, title, description, start_time, end_time, remind_at, source, status, created_at)
+    SELECT id, user_id, ${hasNoteId ? 'note_id' : 'NULL'}, title, description, start_time, end_time, remind_at, source, status, created_at
+    FROM schedules;
+    DROP TABLE schedules;
+    ALTER TABLE schedules__new RENAME TO schedules;
+    COMMIT;
+  `);
+}
 
 // 初始化默认管理员（如果不存在）
 const adminExists = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
