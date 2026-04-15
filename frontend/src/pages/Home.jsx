@@ -12,6 +12,7 @@ export default function Home() {
     const [transcript, setTranscript] = useState('')
     const [liveText, setLiveText] = useState('')
     const [recentNotes, setRecentNotes] = useState([])
+    const [autoSchedulesInfo, setAutoSchedulesInfo] = useState(null) // { createdCount, skippedCount }
     const navigate = useNavigate()
     const user = getUser()
     const touchRef = useRef(false)
@@ -348,7 +349,21 @@ export default function Home() {
         try {
             const title = content.substring(0, 20) + (content.length > 20 ? '...' : '')
             const res = await api.post('/notes', { title, content, is_voice: true })
-            if (res.code === 200) { setTranscript(''); loadRecent() }
+            if (res.code === 200) {
+                const noteId = res.data?.id
+                // 保存笔记成功后，自动抽取日程/提醒
+                try {
+                    const ex = await api.post('/ai/extract-schedules', { transcript: content, note_id: noteId })
+                    if (ex.code === 200) {
+                        const createdCount = ex.data?.created?.length || 0
+                        const skippedCount = ex.data?.skipped?.length || 0
+                        setAutoSchedulesInfo({ createdCount, skippedCount })
+                    }
+                } catch { }
+
+                setTranscript('')
+                loadRecent()
+            }
         } catch { }
     }
 
@@ -410,6 +425,30 @@ export default function Home() {
                 }}>
                     <div style={{ fontSize: 12, color: '#9b7dbd', fontWeight: 600, marginBottom: 6 }}>🎤 语音识别结果</div>
                     {transcript}
+                </div>
+            )}
+
+            {autoSchedulesInfo && (
+                <div style={{
+                    marginTop: 12, padding: 12, background: 'rgba(236, 253, 245, 0.8)',
+                    backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                    borderRadius: 14, fontSize: 13, color: '#065f46', width: '100%',
+                    border: '1px solid rgba(16, 185, 129, 0.25)', textAlign: 'left',
+                    boxShadow: '0 4px 16px rgba(16, 185, 129, 0.08)'
+                }}>
+                    <div style={{ fontWeight: 700, marginBottom: 6 }}>🔔 已自动创建提醒</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                        <span>
+                            创建 {autoSchedulesInfo.createdCount} 条
+                            {autoSchedulesInfo.skippedCount ? `，跳过 ${autoSchedulesInfo.skippedCount} 条` : ''}
+                        </span>
+                        <button
+                            className="btn btn-sm btn-outline"
+                            onClick={() => navigate('/schedule')}
+                        >
+                            去查看
+                        </button>
+                    </div>
                 </div>
             )}
 

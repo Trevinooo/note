@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import api from '../api'
 
+let Capacitor = null
+try { Capacitor = window.Capacitor } catch { }
+const isNative = Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()
+
 export default function Schedule() {
     const [schedules, setSchedules] = useState([])
     const [selectedDate, setSelectedDate] = useState(new Date())
@@ -11,6 +15,7 @@ export default function Schedule() {
     const [reminders, setReminders] = useState([])
     const [showReminders, setShowReminders] = useState(true)
     const reminderTimer = useRef(null)
+    const notifReadyRef = useRef(false)
 
     // 编辑日程状态
     const [editingSchedule, setEditingSchedule] = useState(null)
@@ -20,10 +25,23 @@ export default function Schedule() {
     useEffect(() => {
         loadSchedules()
         checkReminders()
+        initLocalNotifications()
         // 每5分钟检查一次提醒
         reminderTimer.current = setInterval(checkReminders, 5 * 60 * 1000)
         return () => clearInterval(reminderTimer.current)
     }, [])
+
+    async function initLocalNotifications() {
+        if (!isNative) return
+        const LocalNotifications = Capacitor?.Plugins?.LocalNotifications
+        if (!LocalNotifications) return
+        try {
+            const perm = await LocalNotifications.requestPermissions()
+            notifReadyRef.current = perm?.display === 'granted' || perm?.display === true
+        } catch {
+            notifReadyRef.current = false
+        }
+    }
 
     async function loadSchedules() {
         try {
@@ -37,7 +55,61 @@ export default function Schedule() {
             const res = await api.get('/ai/reminders')
             if (res.code === 200 && res.data.length > 0) {
                 setReminders(res.data)
+                // 原生端：尽量预约本地通知（插件不存在则自动降级为仅页面横幅）
+                tryScheduleLocalNotifications(res.data)
             }
+        } catch { }
+    }
+
+    function getReminderTime(r) {
+        return r?.effective_time || r?.remind_at || r?.start_time || null
+    }
+
+    function loadScheduledMap() {
+        try {
+            return JSON.parse(localStorage.getItem('scheduled_local_notifs') || '{}') || {}
+        } catch {
+            return {}
+        }
+    }
+
+    function saveScheduledMap(map) {
+        try { localStorage.setItem('scheduled_local_notifs', JSON.stringify(map || {})) } catch { }
+    }
+
+    async function tryScheduleLocalNotifications(list) {
+        if (!isNative) return
+        const LocalNotifications = Capacitor?.Plugins?.LocalNotifications
+        if (!LocalNotifications) return
+        if (!notifReadyRef.current) return
+
+        const scheduled = loadScheduledMap()
+        const now = Date.now()
+
+        const notifs = []
+        for (const r of list || []) {
+            const t = getReminderTime(r)
+            if (!t) continue
+            const when = new Date(t).getTime()
+            if (!Number.isFinite(when) || when <= now + 5000) continue
+
+            const key = String(r.id)
+            if (scheduled[key]) continue
+
+            const id = 100000 + Number(r.id || 0)
+            notifs.push({
+                id,
+                title: '🔔 提醒',
+                body: r.title || '日程提醒',
+                schedule: { at: new Date(when) }
+            })
+            scheduled[key] = when
+        }
+
+        if (notifs.length === 0) return
+        try {
+            await LocalNotifications.schedule({ notifications: notifs })
+            saveScheduledMap(scheduled)
         } catch { }
     }
 

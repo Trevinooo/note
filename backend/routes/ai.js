@@ -243,6 +243,90 @@ router.post('/plan-schedule', async (req, res) => {
     }
 });
 
+// 从语音转写中抽取日程并落库（用于语音速记闹钟）
+router.post('/extract-schedules', async (req, res) => {
+    try {
+        if (!checkAIQuota(req, res)) return;
+        const { transcript, note_id } = req.body || {};
+        const text = String(transcript || '').trim();
+        if (!text) return res.json({ code: 400, message: 'transcript 不能为空' });
+
+        const CONFIDENCE_THRESHOLD = 0.45;
+        const result = await aiService.extractScheduleFromTranscript(text, req.user.id);
+        if (!result.success) return res.json({ code: 500, message: result.message });
+
+        recordAIUsage(req.user.id, 'extract-schedules');
+
+        let items = [];
+        try {
+            const cleaned = String(result.content || '')
+                .replace(/```json\n?/g, '')
+                .replace(/```\n?/g, '')
+                .trim();
+            items = JSON.parse(cleaned);
+            if (!Array.isArray(items)) items = [];
+        } catch {
+            return res.json({ code: 200, data: { created: [], skipped: [], raw: result.content } });
+        }
+
+        const created = [];
+        const skipped = [];
+        const insertStmt = db.prepare(
+            `INSERT INTO schedules (user_id, note_id, title, description, start_time, end_time, remind_at, source)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        );
+        const existsStmt = db.prepare(
+            `SELECT id FROM schedules
+             WHERE user_id = ?
+               AND (note_id IS ? OR note_id = ?)
+               AND title = ?
+               AND (start_time IS ? OR start_time = ?)
+               AND source = 'ai_extract'
+             LIMIT 1`
+        );
+        const getById = db.prepare('SELECT * FROM schedules WHERE id = ?');
+
+        const tx = db.transaction((rows) => {
+            for (const raw of rows) {
+                const title = String(raw?.title || '').trim();
+                const description = String(raw?.description || '');
+                const start_time = raw?.start_time ?? null;
+                const end_time = raw?.end_time ?? null;
+                const remind_at = raw?.remind_at ?? null;
+                const confidence = Number(raw?.confidence ?? 0);
+
+                if (!title) { skipped.push({ reason: 'empty_title', item: raw }); continue; }
+                if (!start_time) { skipped.push({ reason: 'missing_start_time', item: raw }); continue; }
+                if (Number.isFinite(confidence) && confidence > 0 && confidence < CONFIDENCE_THRESHOLD) {
+                    skipped.push({ reason: 'low_confidence', item: raw }); continue;
+                }
+
+                const nid = (note_id === undefined || note_id === null || note_id === '') ? null : Number(note_id);
+                const dedup = existsStmt.get(req.user.id, nid, nid, title, start_time, start_time);
+                if (dedup) { skipped.push({ reason: 'dedup', item: raw, existing_id: dedup.id }); continue; }
+
+                const r = insertStmt.run(
+                    req.user.id,
+                    nid,
+                    title,
+                    description,
+                    start_time,
+                    end_time,
+                    remind_at,
+                    'ai_extract'
+                );
+                const s = getById.get(r.lastInsertRowid);
+                if (s) created.push(s);
+            }
+        });
+
+        tx(items);
+        res.json({ code: 200, data: { created, skipped } });
+    } catch (e) {
+        res.json({ code: 500, message: e.message });
+    }
+});
+
 // AI 生成思维导图
 router.post('/mindmap', async (req, res) => {
     try {
@@ -294,13 +378,20 @@ router.post('/knowledge-graph', async (req, res) => {
 // 获取待提醒日程
 router.get('/reminders', (req, res) => {
     try {
-        const now = new Date().toISOString();
+        // 使用 SQLite 的 localtime，避免 JS toISOString() 与本地 DATETIME 比较导致时区偏差
+        // 优先使用 remind_at（若为空则回退 start_time）
         const upcoming = db.prepare(`
-            SELECT * FROM schedules
-            WHERE user_id = ? AND status = 'pending' AND start_time IS NOT NULL
-            AND start_time > ? AND start_time <= datetime(?, '+24 hours')
-            ORDER BY start_time ASC
-        `).all(req.user.id, now, now);
+            SELECT
+              *,
+              COALESCE(remind_at, start_time) AS effective_time
+            FROM schedules
+            WHERE user_id = ?
+              AND status = 'pending'
+              AND COALESCE(remind_at, start_time) IS NOT NULL
+              AND COALESCE(remind_at, start_time) > datetime('now', 'localtime')
+              AND COALESCE(remind_at, start_time) <= datetime('now', 'localtime', '+24 hours')
+            ORDER BY effective_time ASC
+        `).all(req.user.id);
         res.json({ code: 200, data: upcoming });
     } catch (e) {
         res.json({ code: 500, message: e.message });

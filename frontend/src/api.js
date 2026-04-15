@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const DEFAULT_SERVER = 'http://192.168.0.107:3001';
+const DEFAULT_SERVER = 'http://172.20.10.2:3001';
 const isNative = typeof window !== 'undefined' && window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
 
 function getServerUrl() {
