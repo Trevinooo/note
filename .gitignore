@@ -1,0 +1,35 @@
+# ====================== IDE 配置文件（核心！）======================
+# 彻底忽略整个 .idea 文件夹，所有 IDEA 配置都不提交
+.idea/
+# 忽略所有 .iml 模块配置文件
+*.iml
+
+# ====================== Node.js 依赖 ======================
+# 前后端的 node_modules 都忽略
+node_modules/
+frontend/node_modules/
+
+# ====================== 打包产物 ======================
+# 前端打包生成的 dist 文件夹
+dist/
+frontend/dist/
+dist-ssr/
+*.local
+
+# ====================== 手机 APP 打包（Capacitor）======================
+android/
+ios/
+/.capacitor
+
+# ====================== 环境变量 & 敏感信息 ======================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ====================== 系统自动生成的垃圾文件 ======================
+.DS_Store
+*.log
+tmp/
+temp/
