@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import api, { getUser } from '../api'
+import api, { getToken } from '../api'
 
 // 思维导图渲染组件
 function MindMapView({ data, level = 0 }) {
@@ -82,6 +82,8 @@ export default function NoteDetail() {
     const [saving, setSaving] = useState(false)
     const [aiLoading, setAiLoading] = useState('')
     const [showUpgrade, setShowUpgrade] = useState(false)
+    const [showExportMenu, setShowExportMenu] = useState(false)
+    const [exporting, setExporting] = useState('')
 
     // 扩展 AI 结果
     const [aiResult, setAiResult] = useState('')
@@ -117,6 +119,41 @@ export default function NoteDetail() {
             await api.delete(`/notes/${id}`)
             navigate('/notes')
         } catch { }
+    }
+
+    async function exportNote(format, imageFormat = 'png') {
+        setShowExportMenu(false)
+        setExporting(format === 'image' ? `image-${imageFormat}` : format)
+        try {
+            const token = getToken()
+            const res = await fetch(`${api.defaults.baseURL}/notes/${id}/export?format=${format}${format === 'image' ? `&imageFormat=${imageFormat}` : ''}`, {
+                method: 'GET',
+                headers: {
+                    Authorization: token ? `Bearer ${token}` : ''
+                }
+            })
+            if (!res.ok) throw new Error('导出失败')
+
+            const blob = await res.blob()
+            const contentDisposition = res.headers.get('content-disposition') || ''
+            const fallbackExt = format === 'word' ? 'docx' : format === 'excel' ? 'xlsx' : format === 'image' ? imageFormat : 'pdf'
+            const filename = decodeURIComponent(contentDisposition.match(/filename="(.+)"/)?.[1] || `${title || 'note'}.${fallbackExt}`)
+
+            const url = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = filename
+            document.body.appendChild(link)
+            link.click()
+            link.remove()
+            window.URL.revokeObjectURL(url)
+
+            const isNative = window?.Capacitor?.isNativePlatform?.()
+            alert(isNative ? '导出成功，已保存到设备下载/文件目录。' : '导出成功，文件已开始下载。')
+        } catch {
+            alert('导出失败，请稍后重试。')
+        }
+        setExporting('')
     }
 
     // 通用 AI 功能处理
@@ -197,6 +234,31 @@ export default function NoteDetail() {
                     </svg>
                 </button>
                 <div style={{ flex: 1 }} />
+                <div style={{ position: 'relative' }}>
+                    <button className="btn btn-sm btn-outline" onClick={() => setShowExportMenu(v => !v)} disabled={!!exporting}>
+                        {exporting ? '导出中...' : '⬇️ 导出'}
+                    </button>
+                    {showExportMenu && (
+                        <div style={{
+                            position: 'absolute',
+                            right: 0,
+                            top: 38,
+                            background: '#fff',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: 12,
+                            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+                            minWidth: 180,
+                            zIndex: 30,
+                            padding: 6
+                        }}>
+                            <button className="btn btn-sm btn-outline" style={{ width: '100%', marginBottom: 6 }} onClick={() => exportNote('pdf')}>导出成 PDF</button>
+                            <button className="btn btn-sm btn-outline" style={{ width: '100%', marginBottom: 6 }} onClick={() => exportNote('word')}>导出成 Word</button>
+                            <button className="btn btn-sm btn-outline" style={{ width: '100%', marginBottom: 6 }} onClick={() => exportNote('excel')}>导出成 Excel</button>
+                            <button className="btn btn-sm btn-outline" style={{ width: '100%', marginBottom: 6 }} onClick={() => exportNote('image', 'png')}>导出成 图片 PNG</button>
+                            <button className="btn btn-sm btn-outline" style={{ width: '100%' }} onClick={() => exportNote('image', 'jpg')}>导出成 图片 JPG</button>
+                        </div>
+                    )}
+                </div>
                 <button className="btn btn-sm btn-outline" onClick={saveNote} disabled={saving}>
                     {saving ? '保存中...' : '💾 保存'}
                 </button>
