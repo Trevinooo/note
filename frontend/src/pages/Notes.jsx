@@ -1,6 +1,190 @@
-import { useState, useEffect } from 'react'
+import {useState, useEffect, useRef} from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api'
+
+function BackupMenu() {
+  const [restoring, setRestoring] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef(null)
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  const handleBackup = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch('/api/notes/backup/all', {
+        method: 'GET',
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      })
+
+      if (!res.ok) {
+        throw new Error('下载失败')
+      }
+
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `notes_backup_${Date.now()}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+
+      alert('备份成功！文件已下载')
+    } catch (err) {
+      alert('备份失败：请先登录后重试')
+    } finally {
+      setMenuOpen(false)
+    }
+  }
+
+  const handleRestore = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    if (!window.confirm('确定要从备份恢复笔记吗？')) return
+
+    try {
+      setRestoring(true)
+      const token = localStorage.getItem('token')
+      const text = await file.text()
+      const backupData = JSON.parse(text)
+      const res = await fetch('/api/notes/backup/restore', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ backupData })
+      })
+      const data = await res.json()
+      alert(data.message)
+      window.location.reload()
+    } catch (err) {
+      alert('恢复失败：文件格式错误')
+    } finally {
+      setRestoring(false)
+      setMenuOpen(false)
+      e.target.value = ''
+    }
+  }
+
+  return (
+    <div ref={menuRef} style={{ position: 'relative' }}>
+      {/* 紫色三点按钮 */}
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        disabled={restoring}
+        style={{
+            width: '32px',
+            height: '32px',
+            border: '1px solid #7c3aed', // 紫色边框
+            borderRadius: '7px',
+            background: '#7c3aed',
+            color: 'white',
+            fontWeight:'bolder',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '22px',
+            marginLeft: '8px'
+        }}
+        onMouseEnter={(e) => {
+            e.target.style.background = '#51289f'
+        } }
+        onMouseLeave={(e) => {
+            e.target.style.background = '#7c3aed'
+        }}
+      >
+        ⋮
+      </button>
+
+      {/* 下拉菜单 */}
+      {menuOpen && (
+        <div style={{
+          position: 'absolute',
+          top: 'calc(100% + 6px)',
+          right: 0,
+          background: '#fff',
+          border: '1px solid #e5e7eb',
+          borderRadius: '15px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          width: '160px',
+          zIndex: 999
+        }}>
+          <button
+            onClick={handleBackup}
+            style={{
+                width: '100%',
+                padding: '10px 12px',
+                textAlign: 'left',
+                border: 'none',
+                background: 'none',
+                cursor: 'pointer',
+                fontSize: '14px',
+                display:'flex',
+                justifyContent:'center',
+            }}
+            onMouseOver={(e) => {
+                e.target.style.background = '#f8fafc';
+                e.target.style.borderTopLeftRadius = '15px'
+                e.target.style.borderTopRightRadius = '15px'
+            }}
+            onMouseLeave={(e) => {
+                e.target.style.background = '#fff';
+            }}
+          >
+            🔐 备份全部笔记
+          </button>
+            <div style={{
+                padding:'1px',
+                margin:'0 20px',
+                background :'#e1eaf4'
+            }}></div>
+          <label style={{
+              width: '100%',
+              display: 'flex',
+              padding: '10px 12px',
+              alignItems:'center',
+              justifyContent:'center',
+              cursor: 'pointer',
+              fontSize: '14px'
+          }}
+            onMouseOver={(e) => {
+                e.target.style.background = '#f8fafc'
+                e.target.style.borderBottomRightRadius = '15px';
+                e.target.style.borderBottomLeftRadius = '15px'
+            }}
+            onMouseLeave={(e) => {
+                e.target.style.background = '#fff'
+            }}
+
+          >
+            {restoring ? '♻️ 恢复中...' : '♻️ 从备份恢复'}
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleRestore}
+              style={{ display: 'none' }}
+              disabled={restoring}
+            />
+          </label>
+        </div>
+      )}
+    </div>
+  )
+}
+
 
 export default function Notes() {
     const [notes, setNotes] = useState([])
@@ -44,9 +228,16 @@ export default function Notes() {
 
     return (
         <div className="notes-page">
-            <div className="page-header-bar">
+            <div className="page-header-bar" style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+            }}>
                 <h1 className="page-title-text">我的笔记</h1>
-                <span style={{ fontSize: 13, color: '#94a3b8' }}>{notes.length} 条</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: 13, color: '#94a3b8' }}>{notes.length} 条</span>
+                    <BackupMenu />
+                </div>
             </div>
 
             <div className="search-bar">

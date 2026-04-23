@@ -283,5 +283,70 @@ router.delete('/:id', (req, res) => {
         res.json({ code: 500, message: e.message });
     }
 });
+// 全量备份：导出所有笔记
+router.get('/backup/all', async (req, res) => {
+  try {
+    const userId = req.user.id;
 
+    const allNotes = db.prepare(`
+      SELECT id, title, content, category, tags, created_at, updated_at
+      FROM notes
+      WHERE user_id = ?
+    `).all(userId);
+
+    const backupData = {
+      backupTime: new Date().toISOString(),
+      userId: userId,
+      notes: allNotes
+    };
+
+    const jsonContent = JSON.stringify(backupData, null, 2);
+    const filename = `notes_backup_${new Date().getTime()}.json`;
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(jsonContent);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ code: 500, message: '备份失败' });
+  }
+});
+
+// 从备份恢复笔记
+router.post('/backup/restore', async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { backupData } = req.body;
+
+    if (!backupData || !backupData.notes || !Array.isArray(backupData.notes)) {
+      return res.status(400).json({ code: 400, message: '备份格式不正确' });
+    }
+
+    const insertStmt = db.prepare(`
+      INSERT INTO notes (user_id, title, content, category, tags, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    let count = 0;
+    for (const note of backupData.notes) {
+      insertStmt.run(
+        userId,
+        note.title || '无标题',
+        note.content || '',
+        note.category || '',
+        note.tags || '',
+        note.created_at || new Date().toISOString(),
+        note.updated_at || new Date().toISOString()
+      );
+      count++;
+    }
+
+    res.json({ code: 200, message: `恢复成功，共导入 ${count} 条笔记` });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ code: 500, message: '恢复失败' });
+  }
+});
 module.exports = router;
