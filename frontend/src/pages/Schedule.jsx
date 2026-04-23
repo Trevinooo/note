@@ -12,6 +12,9 @@ export default function Schedule() {
     const [showAdd, setShowAdd] = useState(false)
     const [newTitle, setNewTitle] = useState('')
     const [newTime, setNewTime] = useState('')
+    const [newRemindAt, setNewRemindAt] = useState('')
+    const [newRepeatType, setNewRepeatType] = useState('none')
+    const [newRepeatWeekday, setNewRepeatWeekday] = useState('')
     const [reminders, setReminders] = useState([])
     const [showReminders, setShowReminders] = useState(true)
     const reminderTimer = useRef(null)
@@ -21,6 +24,9 @@ export default function Schedule() {
     const [editingSchedule, setEditingSchedule] = useState(null)
     const [editTitle, setEditTitle] = useState('')
     const [editTime, setEditTime] = useState('')
+    const [editRemindAt, setEditRemindAt] = useState('')
+    const [editRepeatType, setEditRepeatType] = useState('none')
+    const [editRepeatWeekday, setEditRepeatWeekday] = useState('')
 
     useEffect(() => {
         loadSchedules()
@@ -53,16 +59,94 @@ export default function Schedule() {
     async function checkReminders() {
         try {
             const res = await api.get('/ai/reminders')
-            if (res.code === 200 && res.data.length > 0) {
-                setReminders(res.data)
+            if (res.code === 200) {
+                const list = Array.isArray(res.data) ? res.data : []
+                setReminders(list)
                 // 原生端：尽量预约本地通知（插件不存在则自动降级为仅页面横幅）
-                tryScheduleLocalNotifications(res.data)
+                tryScheduleLocalNotifications(list)
+                processTriggeredReminders(list)
             }
         } catch { }
     }
 
+    async function processTriggeredReminders(list) {
+        const now = Date.now()
+        const cache = getRollForwardMap()
+        const nextCache = { ...cache }
+        for (const item of list || []) {
+            const effective = getReminderTime(item)
+            if (!effective) continue
+            const when = new Date(effective).getTime()
+            if (!Number.isFinite(when)) continue
+            // 仅处理“已到提醒时间且在 5 分钟窗口内”的记录
+            if (when > now || now - when > 5 * 60 * 1000) continue
+            const marker = `${item.id}_${effective}`
+            if (nextCache[item.id] === marker) continue
+            const nextAt = calcNextRemindAt(item)
+            if (!nextAt) {
+                nextCache[item.id] = marker
+                continue
+            }
+            try {
+                await api.put(`/schedules/${item.id}`, { remind_at: nextAt })
+                nextCache[item.id] = marker
+            } catch { }
+        }
+        setRollForwardMap(nextCache)
+    }
+
     function getReminderTime(r) {
         return r?.effective_time || r?.remind_at || r?.start_time || null
+    }
+
+    function toInputDateTime(value) {
+        if (!value) return ''
+        const d = new Date(value)
+        if (Number.isNaN(d.getTime())) return ''
+        const pad = (n) => String(n).padStart(2, '0')
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+    }
+
+    function getRepeatLabel(s) {
+        if (s.repeat_type === 'daily') return '每日'
+        if (s.repeat_type === 'weekly') {
+            const labels = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+            const day = Number(s.repeat_weekday)
+            return `每周${labels[Number.isInteger(day) ? day : 0]}`
+        }
+        return '一次性'
+    }
+
+    function getRollForwardMap() {
+        try {
+            return JSON.parse(localStorage.getItem('rollforward_map') || '{}') || {}
+        } catch {
+            return {}
+        }
+    }
+
+    function setRollForwardMap(map) {
+        try { localStorage.setItem('rollforward_map', JSON.stringify(map || {})) } catch { }
+    }
+
+    function calcNextRemindAt(schedule) {
+        const base = getReminderTime(schedule)
+        if (!base) return null
+        const d = new Date(base)
+        if (Number.isNaN(d.getTime())) return null
+        if (schedule.repeat_type === 'daily') {
+            d.setDate(d.getDate() + 1)
+            return d.toISOString()
+        }
+        if (schedule.repeat_type === 'weekly') {
+            const targetWeekday = Number(schedule.repeat_weekday)
+            const currentWeekday = d.getDay()
+            let delta = (targetWeekday - currentWeekday + 7) % 7
+            if (delta === 0) delta = 7
+            d.setDate(d.getDate() + delta)
+            return d.toISOString()
+        }
+        return null
     }
 
     function loadScheduledMap() {
@@ -115,11 +199,21 @@ export default function Schedule() {
 
     async function createSchedule() {
         if (!newTitle) return
+        if (newRepeatType === 'weekly' && newRepeatWeekday === '') return
         try {
-            await api.post('/schedules', { title: newTitle, start_time: newTime || null })
+            await api.post('/schedules', {
+                title: newTitle,
+                start_time: newTime || null,
+                remind_at: newRemindAt || newTime || null,
+                repeat_type: newRepeatType,
+                repeat_weekday: newRepeatType === 'weekly' ? Number(newRepeatWeekday) : null
+            })
             setShowAdd(false)
             setNewTitle('')
             setNewTime('')
+            setNewRemindAt('')
+            setNewRepeatType('none')
+            setNewRepeatWeekday('')
             loadSchedules()
         } catch { }
     }
@@ -143,20 +237,34 @@ export default function Schedule() {
     function openEdit(s) {
         setEditingSchedule(s)
         setEditTitle(s.title)
-        setEditTime(s.start_time ? s.start_time.substring(0, 16) : '')
+        setEditTime(toInputDateTime(s.start_time))
+        setEditRemindAt(toInputDateTime(s.remind_at || s.start_time))
+        setEditRepeatType(s.repeat_type || 'none')
+        setEditRepeatWeekday(
+            s.repeat_type === 'weekly' && s.repeat_weekday !== null && s.repeat_weekday !== undefined
+                ? String(s.repeat_weekday)
+                : ''
+        )
     }
 
     // 保存编辑
     async function saveEdit() {
         if (!editingSchedule || !editTitle) return
+        if (editRepeatType === 'weekly' && editRepeatWeekday === '') return
         try {
             await api.put(`/schedules/${editingSchedule.id}`, {
                 title: editTitle,
-                start_time: editTime || null
+                start_time: editTime || null,
+                remind_at: editRemindAt || editTime || null,
+                repeat_type: editRepeatType,
+                repeat_weekday: editRepeatType === 'weekly' ? Number(editRepeatWeekday) : null
             })
             setEditingSchedule(null)
             setEditTitle('')
             setEditTime('')
+            setEditRemindAt('')
+            setEditRepeatType('none')
+            setEditRepeatWeekday('')
             loadSchedules()
         } catch { }
     }
@@ -169,8 +277,10 @@ export default function Schedule() {
     }
 
     function getTimeRemaining(startTime) {
+        if (!startTime) return '即将开始'
         const now = new Date()
         const target = new Date(startTime)
+        if (Number.isNaN(target.getTime())) return '即将开始'
         const diff = target - now
         if (diff < 0) return '已开始'
         const hours = Math.floor(diff / 3600000)
@@ -219,7 +329,10 @@ export default function Schedule() {
                 </div>
                 <div className="schedule-info" onClick={() => openEdit(s)} style={{ cursor: 'pointer' }}>
                     <div className={`schedule-title ${s.status === 'done' ? 'done' : ''}`}>{s.title}</div>
-                    {s.start_time && <div className="schedule-time">{s.start_time.substring(11, 16) || '全天'}</div>}
+                    <div className="schedule-time" style={{ display: 'flex', gap: 8 }}>
+                        {s.start_time ? (s.start_time.substring(11, 16) || '全天') : '未设置时间'}
+                        <span style={{ color: '#64748b' }}>{getRepeatLabel(s)}</span>
+                    </div>
                 </div>
                 {s.source === 'ai_extract' && <span className="schedule-source-badge">AI</span>}
                 <button className="schedule-delete" onClick={() => deleteSchedule(s.id)}>
@@ -266,7 +379,7 @@ export default function Schedule() {
                                 fontSize: 11, background: '#f59e0b', color: 'white',
                                 padding: '2px 8px', borderRadius: 10, fontWeight: 600, flexShrink: 0
                             }}>
-                                {getTimeRemaining(r.start_time)}
+                                {getTimeRemaining(getReminderTime(r))}
                             </span>
                             <span style={{ fontSize: 13, color: '#78350f', fontWeight: 500 }}>{r.title}</span>
                         </div>
@@ -328,7 +441,56 @@ export default function Schedule() {
                             <label className="form-label">时间（可选）</label>
                             <input className="form-input" type="datetime-local" value={newTime} onChange={e => setNewTime(e.target.value)} />
                         </div>
-                        <button className="btn btn-primary" onClick={createSchedule}>创建</button>
+                        <div className="form-group">
+                            <label className="form-label">提醒时间</label>
+                            <input className="form-input" type="datetime-local" value={newRemindAt} onChange={e => setNewRemindAt(e.target.value)} />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">重复</label>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                {[
+                                    { value: 'none', label: '一次性' },
+                                    { value: 'daily', label: '每日' },
+                                    { value: 'weekly', label: '每周' }
+                                ].map((opt) => (
+                                    <button
+                                        key={opt.value}
+                                        type="button"
+                                        className={`btn btn-sm ${newRepeatType === opt.value ? 'btn-primary' : 'btn-outline'}`}
+                                        onClick={() => {
+                                            setNewRepeatType(opt.value)
+                                            if (opt.value !== 'weekly') setNewRepeatWeekday('')
+                                        }}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        {newRepeatType === 'weekly' && (
+                            <div className="form-group">
+                                <label className="form-label">每周提醒日</label>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                    {['日', '一', '二', '三', '四', '五', '六'].map((d, idx) => (
+                                        <button
+                                            key={d}
+                                            type="button"
+                                            className={`btn btn-sm ${newRepeatWeekday === String(idx) ? 'btn-primary' : 'btn-outline'}`}
+                                            onClick={() => setNewRepeatWeekday(String(idx))}
+                                        >
+                                            周{d}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        <button
+                            className="btn btn-primary"
+                            onClick={createSchedule}
+                            disabled={newRepeatType === 'weekly' && newRepeatWeekday === ''}
+                        >
+                            创建
+                        </button>
                     </div>
                 </div>
             )}
@@ -349,7 +511,56 @@ export default function Schedule() {
                             <label className="form-label">时间</label>
                             <input className="form-input" type="datetime-local" value={editTime} onChange={e => setEditTime(e.target.value)} />
                         </div>
-                        <button className="btn btn-primary" onClick={saveEdit}>保存修改</button>
+                        <div className="form-group">
+                            <label className="form-label">提醒时间</label>
+                            <input className="form-input" type="datetime-local" value={editRemindAt} onChange={e => setEditRemindAt(e.target.value)} />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">重复</label>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                {[
+                                    { value: 'none', label: '一次性' },
+                                    { value: 'daily', label: '每日' },
+                                    { value: 'weekly', label: '每周' }
+                                ].map((opt) => (
+                                    <button
+                                        key={opt.value}
+                                        type="button"
+                                        className={`btn btn-sm ${editRepeatType === opt.value ? 'btn-primary' : 'btn-outline'}`}
+                                        onClick={() => {
+                                            setEditRepeatType(opt.value)
+                                            if (opt.value !== 'weekly') setEditRepeatWeekday('')
+                                        }}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        {editRepeatType === 'weekly' && (
+                            <div className="form-group">
+                                <label className="form-label">每周提醒日</label>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                    {['日', '一', '二', '三', '四', '五', '六'].map((d, idx) => (
+                                        <button
+                                            key={d}
+                                            type="button"
+                                            className={`btn btn-sm ${editRepeatWeekday === String(idx) ? 'btn-primary' : 'btn-outline'}`}
+                                            onClick={() => setEditRepeatWeekday(String(idx))}
+                                        >
+                                            周{d}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        <button
+                            className="btn btn-primary"
+                            onClick={saveEdit}
+                            disabled={editRepeatType === 'weekly' && editRepeatWeekday === ''}
+                        >
+                            保存修改
+                        </button>
                     </div>
                 </div>
             )}

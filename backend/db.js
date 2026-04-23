@@ -44,6 +44,8 @@ db.exec(`
     start_time DATETIME,
     end_time DATETIME,
     remind_at DATETIME,
+    repeat_type TEXT NOT NULL DEFAULT 'none' CHECK(repeat_type IN ('none','daily','weekly')),
+    repeat_weekday INTEGER CHECK(repeat_weekday BETWEEN 0 AND 6),
     source TEXT DEFAULT 'manual' CHECK(source IN ('manual','ai_extract','ai_plan')),
     status TEXT DEFAULT 'pending' CHECK(status IN ('pending','done')),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -97,9 +99,11 @@ db.exec(`
 // SQLite 对已存在表追加外键限制支持很弱，这里用“重建表”方式确保约束存在且不丢数据。
 const schedulesCols = db.prepare(`PRAGMA table_info('schedules')`).all();
 const hasNoteId = schedulesCols.some((c) => c.name === 'note_id');
+const hasRepeatType = schedulesCols.some((c) => c.name === 'repeat_type');
+const hasRepeatWeekday = schedulesCols.some((c) => c.name === 'repeat_weekday');
 const schedulesFks = db.prepare(`PRAGMA foreign_key_list('schedules')`).all();
 const hasNoteFk = schedulesFks.some((fk) => fk.table === 'notes' && fk.from === 'note_id');
-if (!hasNoteId || !hasNoteFk) {
+if (!hasNoteId || !hasNoteFk || !hasRepeatType || !hasRepeatWeekday) {
   db.exec(`
     BEGIN;
     CREATE TABLE IF NOT EXISTS schedules__new (
@@ -111,14 +115,29 @@ if (!hasNoteId || !hasNoteFk) {
       start_time DATETIME,
       end_time DATETIME,
       remind_at DATETIME,
+      repeat_type TEXT NOT NULL DEFAULT 'none' CHECK(repeat_type IN ('none','daily','weekly')),
+      repeat_weekday INTEGER CHECK(repeat_weekday BETWEEN 0 AND 6),
       source TEXT DEFAULT 'manual' CHECK(source IN ('manual','ai_extract','ai_plan')),
       status TEXT DEFAULT 'pending' CHECK(status IN ('pending','done')),
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE SET NULL
     );
-    INSERT INTO schedules__new (id, user_id, note_id, title, description, start_time, end_time, remind_at, source, status, created_at)
-    SELECT id, user_id, ${hasNoteId ? 'note_id' : 'NULL'}, title, description, start_time, end_time, remind_at, source, status, created_at
+    INSERT INTO schedules__new (id, user_id, note_id, title, description, start_time, end_time, remind_at, repeat_type, repeat_weekday, source, status, created_at)
+    SELECT
+      id,
+      user_id,
+      ${hasNoteId ? 'note_id' : 'NULL'},
+      title,
+      description,
+      start_time,
+      end_time,
+      remind_at,
+      ${hasRepeatType ? 'repeat_type' : "'none'"},
+      ${hasRepeatWeekday ? 'repeat_weekday' : 'NULL'},
+      source,
+      status,
+      created_at
     FROM schedules;
     DROP TABLE schedules;
     ALTER TABLE schedules__new RENAME TO schedules;

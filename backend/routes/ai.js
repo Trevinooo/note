@@ -380,6 +380,7 @@ router.get('/reminders', (req, res) => {
     try {
         // 使用 SQLite 的 localtime，避免 JS toISOString() 与本地 DATETIME 比较导致时区偏差
         // 优先使用 remind_at（若为空则回退 start_time）
+        // 允许最近 5 分钟内的记录，便于前端执行“已触发后续期”逻辑
         const upcoming = db.prepare(`
             SELECT
               *,
@@ -388,7 +389,7 @@ router.get('/reminders', (req, res) => {
             WHERE user_id = ?
               AND status = 'pending'
               AND COALESCE(remind_at, start_time) IS NOT NULL
-              AND COALESCE(remind_at, start_time) > datetime('now', 'localtime')
+              AND COALESCE(remind_at, start_time) >= datetime('now', 'localtime', '-5 minutes')
               AND COALESCE(remind_at, start_time) <= datetime('now', 'localtime', '+24 hours')
             ORDER BY effective_time ASC
         `).all(req.user.id);
