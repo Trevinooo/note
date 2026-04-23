@@ -447,7 +447,7 @@ export default function Schedule() {
                         </div>
                         <div className="form-group">
                             <label className="form-label">重复</label>
-                            <div style={{ display: 'flex', gap: 8 }}>
+                            <div className="repeat-group">
                                 {[
                                     { value: 'none', label: '一次性' },
                                     { value: 'daily', label: '每日' },
@@ -456,7 +456,7 @@ export default function Schedule() {
                                     <button
                                         key={opt.value}
                                         type="button"
-                                        className={`btn btn-sm ${newRepeatType === opt.value ? 'btn-primary' : 'btn-outline'}`}
+                                        className={`repeat-pill ${newRepeatType === opt.value ? 'is-active' : ''}`}
                                         onClick={() => {
                                             setNewRepeatType(opt.value)
                                             if (opt.value !== 'weekly') setNewRepeatWeekday('')
@@ -470,12 +470,12 @@ export default function Schedule() {
                         {newRepeatType === 'weekly' && (
                             <div className="form-group">
                                 <label className="form-label">每周提醒日</label>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                <div className="repeat-group">
                                     {['日', '一', '二', '三', '四', '五', '六'].map((d, idx) => (
                                         <button
                                             key={d}
                                             type="button"
-                                            className={`btn btn-sm ${newRepeatWeekday === String(idx) ? 'btn-primary' : 'btn-outline'}`}
+                                            className={`repeat-pill ${newRepeatWeekday === String(idx) ? 'is-active' : ''}`}
                                             onClick={() => setNewRepeatWeekday(String(idx))}
                                         >
                                             周{d}
@@ -517,7 +517,7 @@ export default function Schedule() {
                         </div>
                         <div className="form-group">
                             <label className="form-label">重复</label>
-                            <div style={{ display: 'flex', gap: 8 }}>
+                            <div className="repeat-group">
                                 {[
                                     { value: 'none', label: '一次性' },
                                     { value: 'daily', label: '每日' },
@@ -526,7 +526,7 @@ export default function Schedule() {
                                     <button
                                         key={opt.value}
                                         type="button"
-                                        className={`btn btn-sm ${editRepeatType === opt.value ? 'btn-primary' : 'btn-outline'}`}
+                                        className={`repeat-pill ${editRepeatType === opt.value ? 'is-active' : ''}`}
                                         onClick={() => {
                                             setEditRepeatType(opt.value)
                                             if (opt.value !== 'weekly') setEditRepeatWeekday('')
@@ -540,12 +540,12 @@ export default function Schedule() {
                         {editRepeatType === 'weekly' && (
                             <div className="form-group">
                                 <label className="form-label">每周提醒日</label>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                <div className="repeat-group">
                                     {['日', '一', '二', '三', '四', '五', '六'].map((d, idx) => (
                                         <button
                                             key={d}
                                             type="button"
-                                            className={`btn btn-sm ${editRepeatWeekday === String(idx) ? 'btn-primary' : 'btn-outline'}`}
+                                            className={`repeat-pill ${editRepeatWeekday === String(idx) ? 'is-active' : ''}`}
                                             onClick={() => setEditRepeatWeekday(String(idx))}
                                         >
                                             周{d}
