@@ -33,3 +33,7 @@ ios/
 *.log
 tmp/
 temp/
+
+# SQLite temporary and journal files
+backend/*.db-shm
+backend/*.db-wal
