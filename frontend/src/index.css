@@ -19,6 +19,112 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
   --radius: 12px;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --nav-glass: rgba(255, 255, 255, 0.95);
+  --input-bg: #f8fafc;
+  --input-focus-bg: #ffffff;
+  --bg-muted: #f1f5f9;
+  --bg-subtle: #f8fafc;
+  --shadow-app: 0 0 40px rgba(0, 0, 0, 0.08);
+  --tag-badge-bg: #eef2ff;
+  --summary-gradient: linear-gradient(135deg, #f0f4ff, #e8f4f8);
+  --summary-border-color: #d4dff7;
+  --modal-overlay: rgba(0, 0, 0, 0.35);
+  --logout-bg: #fef2f2;
+  --logout-bg-hover: #fee2e2;
+  --modal-close-bg: #f1f5f9;
+  --selected-cal-bg: #eef2ff;
+  --btn-today-hover: #fffbeb;
+  --schedule-source-bg: #fef3c7;
+  --schedule-source-text: #d97706;
+  --transcript-panel-bg: rgba(255, 255, 255, 0.75);
+  --transcript-panel-border: rgba(255, 255, 255, 0.6);
+  --transcript-text: #5a4a3a;
+  --transcript-label: #9b7dbd;
+  --auto-schedule-bg: rgba(236, 253, 245, 0.8);
+  --auto-schedule-border: rgba(16, 185, 129, 0.25);
+  --auto-schedule-text: #065f46;
+  --stat-note-bg: #f8f9ff;
+  --stat-schedule-bg: #f0fdf4;
+  --stat-ai-bg: #fef3c7;
+  --profile-card-premium: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%);
+  --profile-card-normal: linear-gradient(135deg, #f8f9ff 0%, #eef2ff 100%);
+  --profile-card-border-premium: #f59e0b;
+  --profile-card-border-normal: #d4dff7;
+  --divider-strong: #e2e8f0;
+  --msg-success-bg: #ecfdf5;
+  --msg-error-bg: #fef2f2;
+  --btn-disabled-bg: #d4d4d4;
+  --profile-premium-title: #92400e;
+  --profile-premium-sub: #a16207;
+  --profile-normal-title: #1e293b;
+  --profile-normal-sub: #64748b;
+  --schedule-reminder-bg: linear-gradient(135deg, #fffbeb, #fef3c7);
+  --schedule-reminder-border: #fde68a;
+  --schedule-reminder-heading: #92400e;
+  --schedule-reminder-text: #78350f;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --primary: #8b83ff;
+  --primary-light: #a5adff;
+  --primary-dark: #6c63ff;
+  --secondary: #22d3ee;
+  --accent: #34d399;
+  --bg-body: #0c1017;
+  --bg-card: #161b22;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b9cb3;
+  --text-muted: #6e7a8a;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --border-color: #30363d;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --nav-glass: rgba(22, 27, 34, 0.92);
+  --input-bg: #0d1117;
+  --input-focus-bg: #161b22;
+  --bg-muted: #1c2330;
+  --bg-subtle: #252d3a;
+  --shadow-app: 0 0 48px rgba(0, 0, 0, 0.45);
+  --tag-badge-bg: rgba(108, 99, 255, 0.2);
+  --summary-gradient: linear-gradient(135deg, #1a2332, #16202a);
+  --summary-border-color: #30363d;
+  --modal-overlay: rgba(0, 0, 0, 0.55);
+  --logout-bg: rgba(239, 68, 68, 0.12);
+  --logout-bg-hover: rgba(239, 68, 68, 0.2);
+  --modal-close-bg: #252d3a;
+  --selected-cal-bg: rgba(108, 99, 255, 0.2);
+  --btn-today-hover: rgba(245, 158, 11, 0.12);
+  --schedule-source-bg: rgba(245, 158, 11, 0.18);
+  --schedule-source-text: #fbbf24;
+  --transcript-panel-bg: rgba(22, 27, 34, 0.75);
+  --transcript-panel-border: rgba(108, 99, 255, 0.2);
+  --transcript-text: #c9d1d9;
+  --transcript-label: #a5b4fc;
+  --auto-schedule-bg: rgba(16, 185, 129, 0.12);
+  --auto-schedule-border: rgba(52, 211, 153, 0.35);
+  --auto-schedule-text: #6ee7b7;
+  --stat-note-bg: rgba(108, 99, 255, 0.12);
+  --stat-schedule-bg: rgba(16, 185, 129, 0.12);
+  --stat-ai-bg: rgba(245, 158, 11, 0.12);
+  --profile-card-premium: linear-gradient(135deg, #3d3420 0%, #4a3d1a 50%, #5c4a1a 100%);
+  --profile-card-normal: linear-gradient(135deg, #1e2436 0%, #1a2233 100%);
+  --profile-card-border-premium: #b45309;
+  --profile-card-border-normal: #30363d;
+  --divider-strong: #30363d;
+  --msg-success-bg: rgba(16, 185, 129, 0.15);
+  --msg-error-bg: rgba(239, 68, 68, 0.12);
+  --btn-disabled-bg: #3d444d;
+  --profile-premium-title: #fde68a;
+  --profile-premium-sub: #fcd34d;
+  --profile-normal-title: #e6edf3;
+  --profile-normal-sub: #8b9cb3;
+  --schedule-reminder-bg: linear-gradient(135deg, #2a2318, #3d3018);
+  --schedule-reminder-border: rgba(251, 191, 36, 0.35);
+  --schedule-reminder-heading: #fcd34d;
+  --schedule-reminder-text: #fde68a;
 }
 
 * {
@@ -46,7 +152,7 @@ body {
   min-height: 100vh;
   background: var(--bg-body);
   position: relative;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-app);
 }
 
 .app-content {
@@ -62,7 +168,7 @@ body {
   transform: translateX(-50%);
   width: 100%;
   max-width: 430px;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--nav-glass);
   backdrop-filter: blur(20px);
   border-top: 1px solid var(--border-color);
   display: flex;
@@ -104,10 +210,64 @@ body {
   justify-content: center;
   padding: 24px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+}
+
+[data-theme="dark"] .login-page {
+  background: linear-gradient(145deg, #1a1f35 0%, #12182a 45%, #0d1524 100%);
+}
+
+.login-theme-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.login-theme-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.login-gear-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-muted);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.login-gear-btn.is-open {
+  background: rgba(108, 99, 255, 0.15);
+  border-color: transparent;
 }
 
 .login-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 24px;
   padding: 40px 32px;
   width: 100%;
@@ -152,7 +312,7 @@ body {
   font-size: 14px;
   font-family: inherit;
   color: var(--text-primary);
-  background: #f8fafc;
+  background: var(--input-bg);
   transition: var(--transition);
   outline: none;
 }
@@ -160,7 +320,7 @@ body {
 .form-input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
-  background: white;
+  background: var(--input-focus-bg);
 }
 
 .btn {
@@ -637,6 +797,65 @@ body {
   }
 }
 
+[data-theme="dark"] .home-page {
+  background: linear-gradient(160deg, #141a24 0%, #1a2230 45%, #121820 100%);
+}
+
+[data-theme="dark"] .home-page::before {
+  background: radial-gradient(circle, rgba(108, 99, 255, 0.18) 0%, transparent 70%);
+}
+
+[data-theme="dark"] .home-page::after {
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.08) 0%, transparent 70%);
+}
+
+[data-theme="dark"] .home-greeting {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .home-title {
+  background: linear-gradient(135deg, #a5b4fc, #22d3ee);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+[data-theme="dark"] .voice-orb-outer {
+  background: radial-gradient(circle,
+      rgba(40, 48, 64, 0.6) 0%,
+      rgba(30, 38, 52, 0.25) 45%,
+      transparent 100%);
+}
+
+[data-theme="dark"] .voice-orb-middle {
+  background: rgba(30, 40, 55, 0.5);
+  border-color: rgba(108, 99, 255, 0.25);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    inset 0 1px 2px rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .voice-orb-inner {
+  background: rgba(22, 28, 40, 0.45);
+  border-color: rgba(108, 99, 255, 0.2);
+}
+
+[data-theme="dark"] .voice-btn {
+  background: linear-gradient(145deg, #5b4d8a, #4a5580, #3d5a6b);
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.35),
+    inset 0 2px 4px rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .voice-hint,
+[data-theme="dark"] .voice-hint-sub,
+[data-theme="dark"] .recording-transcript {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .recording-text {
+  color: var(--primary-light);
+}
+
 .home-recent {
   width: 100%;
   margin-top: 32px;
@@ -651,7 +870,7 @@ body {
 
 /* 笔记卡片 */
 .note-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 12px;
@@ -703,8 +922,13 @@ body {
   border-radius: 12px;
   font-size: 11px;
   font-weight: 500;
-  background: #eef2ff;
+  background: var(--tag-badge-bg);
   color: var(--primary);
+}
+
+.tag-badge-voice {
+  background: var(--schedule-source-bg);
+  color: var(--schedule-source-text);
 }
 
 .note-card-time {
@@ -735,7 +959,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: white;
+  background: var(--bg-card);
   border-radius: 12px;
   padding: 10px 14px;
   margin-bottom: 12px;
@@ -772,7 +996,7 @@ body {
   font-size: 13px;
   font-weight: 500;
   border: 1px solid var(--border-color);
-  background: white;
+  background: var(--bg-card);
   color: var(--text-secondary);
   cursor: pointer;
   white-space: nowrap;
@@ -825,7 +1049,7 @@ body {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: white;
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
   display: flex;
   align-items: center;
@@ -835,7 +1059,7 @@ body {
 }
 
 .back-btn:hover {
-  background: #f1f5f9;
+  background: var(--bg-muted);
 }
 
 .back-btn svg {
@@ -865,7 +1089,7 @@ body {
   line-height: 1.8;
   font-family: inherit;
   color: var(--text-primary);
-  background: white;
+  background: var(--bg-card);
   border-radius: 14px;
   padding: 20px;
   resize: vertical;
@@ -885,7 +1109,7 @@ body {
   font-size: 13px;
   font-weight: 500;
   border: 1px solid var(--border-color);
-  background: white;
+  background: var(--bg-card);
   color: var(--text-secondary);
   cursor: pointer;
   transition: var(--transition);
@@ -900,14 +1124,14 @@ body {
 }
 
 .summary-box {
-  background: linear-gradient(135deg, #f0f4ff, #e8f4f8);
+  background: var(--summary-gradient);
   border-radius: 12px;
   padding: 16px;
   margin-top: 16px;
   font-size: 14px;
   color: var(--text-secondary);
   line-height: 1.6;
-  border: 1px solid #d4dff7;
+  border: 1px solid var(--summary-border-color);
 }
 
 .summary-box-title {
@@ -946,7 +1170,7 @@ body {
   height: 32px;
   border-radius: 8px;
   border: 1px solid var(--border-color);
-  background: white;
+  background: var(--bg-card);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -955,7 +1179,7 @@ body {
 }
 
 .calendar-nav button:hover {
-  background: #f1f5f9;
+  background: var(--bg-muted);
 }
 
 .calendar-grid {
@@ -984,7 +1208,7 @@ body {
 }
 
 .calendar-day:hover {
-  background: #f1f5f9;
+  background: var(--bg-muted);
 }
 
 .calendar-day.today {
@@ -994,7 +1218,7 @@ body {
 }
 
 .calendar-day.selected {
-  background: #eef2ff;
+  background: var(--selected-cal-bg);
   color: var(--primary);
   font-weight: 600;
 }
@@ -1026,7 +1250,7 @@ body {
 }
 
 .schedule-item {
-  background: white;
+  background: var(--bg-card);
   border-radius: 12px;
   padding: 14px 16px;
   margin-bottom: 8px;
@@ -1057,7 +1281,7 @@ body {
 }
 
 .btn-today:hover {
-  background: #fffbeb;
+  background: var(--btn-today-hover);
 }
 
 /* 笔记详情页无底部导航时去掉 padding */
@@ -1107,8 +1331,8 @@ body {
   border-radius: 10px;
   font-size: 10px;
   font-weight: 500;
-  background: #fef3c7;
-  color: #d97706;
+  background: var(--schedule-source-bg);
+  color: var(--schedule-source-text);
 }
 
 .schedule-delete {
@@ -1126,7 +1350,7 @@ body {
 }
 
 .schedule-delete:hover {
-  background: #fef2f2;
+  background: var(--logout-bg);
   color: var(--danger);
 }
 
@@ -1138,7 +1362,7 @@ body {
 
 .repeat-pill {
   border: 1px solid var(--border-color);
-  background: #fff;
+  background: var(--bg-card);
   color: var(--text-secondary);
   border-radius: 999px;
   padding: 6px 12px;
@@ -1158,7 +1382,7 @@ body {
 
 .repeat-pill.is-active {
   border-color: var(--primary);
-  background: #eef2ff;
+  background: var(--selected-cal-bg);
   color: var(--primary);
 }
 
@@ -1169,7 +1393,7 @@ body {
 }
 
 .ai-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 12px;
@@ -1222,6 +1446,8 @@ body {
   resize: vertical;
   outline: none;
   transition: var(--transition);
+  background: var(--bg-card);
+  color: var(--text-primary);
 }
 
 .ai-input-area textarea:focus {
@@ -1231,8 +1457,8 @@ body {
 
 .ai-result {
   margin-top: 16px;
-  background: linear-gradient(135deg, #f0f4ff, #e8f4f8);
-  border: 1px solid #d4dff7;
+  background: var(--summary-gradient);
+  border: 1px solid var(--summary-border-color);
   border-radius: 14px;
   padding: 16px;
 }
@@ -1295,7 +1521,7 @@ body {
 }
 
 .profile-section {
-  background: white;
+  background: var(--bg-card);
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 12px;
@@ -1314,7 +1540,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 12px 0;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .profile-item:last-child {
@@ -1337,7 +1563,7 @@ body {
   padding: 14px;
   border: none;
   border-radius: 14px;
-  background: #fef2f2;
+  background: var(--logout-bg);
   color: var(--danger);
   font-size: 15px;
   font-weight: 600;
@@ -1348,7 +1574,7 @@ body {
 }
 
 .logout-btn:hover {
-  background: #fee2e2;
+  background: var(--logout-bg-hover);
 }
 
 /* 模态框 */
@@ -1358,7 +1584,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--modal-overlay);
   backdrop-filter: blur(4px);
   z-index: 999;
   display: flex;
@@ -1393,6 +1619,7 @@ body {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 20px;
+  color: var(--text-primary);
 }
 
 .modal-close {
@@ -1400,7 +1627,8 @@ body {
   height: 32px;
   border-radius: 50%;
   border: none;
-  background: #f1f5f9;
+  background: var(--modal-close-bg);
+  color: var(--text-secondary);
   cursor: pointer;
   font-size: 18px;
   display: flex;
@@ -1412,6 +1640,119 @@ body {
 .modal-close:hover {
   background: var(--danger);
   color: white;
+}
+
+.backup-menu-trigger {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #7c3aed;
+  border-radius: 7px;
+  background: #7c3aed;
+  color: #fff;
+  font-weight: bolder;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-left: 8px;
+  transition: var(--transition);
+}
+
+.backup-menu-trigger:hover:not(:disabled) {
+  background: #51289f;
+}
+
+.backup-menu-trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.backup-menu-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 15px;
+  box-shadow: var(--shadow-md);
+  width: 160px;
+  z-index: 999;
+  overflow: hidden;
+}
+
+.backup-menu-item {
+  width: 100%;
+  padding: 10px 12px;
+  text-align: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary);
+  font-family: inherit;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.backup-menu-item:hover {
+  background: var(--bg-muted);
+}
+
+.backup-menu-sep {
+  height: 1px;
+  margin: 0 12px;
+  background: var(--border-color);
+}
+
+.profile-theme-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-theme-row > span:first-child {
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.theme-switch {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-muted);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: var(--transition);
+}
+
+.theme-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+
+.theme-switch.is-dark {
+  background: rgba(108, 99, 255, 0.35);
+  border-color: var(--primary);
+}
+
+.theme-switch.is-dark::after {
+  left: 23px;
+  background: var(--primary);
 }
 
 /* Toast */

@@ -22,7 +22,7 @@ function MindMapView({ data, level = 0 }) {
                 <span style={{
                     fontSize: level === 0 ? 16 : level === 1 ? 14 : 13,
                     fontWeight: level <= 1 ? 600 : 400,
-                    color: level === 0 ? '#1e293b' : level === 1 ? '#374151' : '#64748b'
+                    color: level === 0 ? 'var(--text-primary)' : level === 1 ? 'var(--text-primary)' : 'var(--text-secondary)'
                 }}>
                     {data.title}
                 </span>
@@ -56,8 +56,8 @@ function KnowledgeGraphView({ data }) {
                 return (
                     <g key={`e${i}`}>
                         <line x1={s.x} y1={s.y} x2={t.x} y2={t.y}
-                            stroke="#d4dff7" strokeWidth={1.5} />
-                        <text x={mx} y={my - 4} fontSize={7} fill="#94a3b8" textAnchor="middle">
+                            stroke="var(--summary-border-color)" strokeWidth={1.5} />
+                        <text x={mx} y={my - 4} fontSize={7} fill="var(--text-muted)" textAnchor="middle">
                             {e.label}
                         </text>
                     </g>
@@ -69,7 +69,7 @@ function KnowledgeGraphView({ data }) {
                 return (
                     <g key={`n${i}`}>
                         <circle cx={n.x} cy={n.y} r={r} fill={color + '20'} stroke={color} strokeWidth={1.5} />
-                        <text x={n.x} y={n.y + 1} fontSize={8} fill="#1e293b" textAnchor="middle" dominantBaseline="middle">
+                        <text x={n.x} y={n.y + 1} fontSize={8} fill="var(--text-primary)" textAnchor="middle" dominantBaseline="middle">
                             {n.label?.length > 6 ? n.label.substring(0, 6) + '..' : n.label}
                         </text>
                     </g>
@@ -87,13 +87,13 @@ function UpgradeModal({ show, onClose }) {
     return (
         <div style={{
             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)',
+            background: 'var(--modal-overlay)', backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             zIndex: 9999, padding: 20
         }} onClick={onClose}>
             <div onClick={e => e.stopPropagation()} style={{
-                background: '#fff', borderRadius: 20, width: '100%', maxWidth: 340,
+                background: 'var(--bg-card)', borderRadius: 20, width: '100%', maxWidth: 340,
                 overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
                 animation: 'modalIn 0.3s ease'
             }}>
@@ -114,7 +114,7 @@ function UpgradeModal({ show, onClose }) {
                             <span key={i} style={{
                                 display: 'inline-block', padding: '4px 10px', margin: 3,
                                 borderRadius: 16, fontSize: 12, fontWeight: 500,
-                                background: '#f0f4ff', color: '#6C63FF'
+                                background: 'var(--tag-badge-bg)', color: 'var(--primary)'
                             }}>{item}</span>
                         ))}
                     </div>
@@ -129,7 +129,7 @@ function UpgradeModal({ show, onClose }) {
                     </button>
                     <button onClick={onClose} style={{
                         width: '100%', padding: '10px 0', marginTop: 8, border: 'none',
-                        background: 'transparent', color: '#94a3b8', fontSize: 13,
+                        background: 'transparent', color: 'var(--text-muted)', fontSize: 13,
                         cursor: 'pointer', fontFamily: 'inherit'
                     }}>
                         稍后再说
@@ -269,56 +269,57 @@ export default function AI() {
 
             {/* 文件上传 + 文本输入 */}
             <div style={{
-                background: 'white', borderRadius: 16, padding: 16, marginBottom: 16,
-                border: '1px solid #e2e8f0', textAlign: 'left'
+                background: 'var(--bg-card)', borderRadius: 16, padding: 16, marginBottom: 16,
+                border: '1px solid var(--border-color)', textAlign: 'left'
             }}>
                 <div onClick={() => fileInputRef.current?.click()} style={{
-                    border: '2px dashed #d4dff7', borderRadius: 14, padding: '16px 12px',
+                    border: '2px dashed var(--summary-border-color)', borderRadius: 14, padding: '16px 12px',
                     textAlign: 'center', cursor: 'pointer',
-                    background: 'linear-gradient(135deg, #f8f9ff, #f0f4ff)', marginBottom: 12,
+                    background: 'var(--summary-gradient)', marginBottom: 12,
                     overflow: 'hidden'
                 }}>
                     <input ref={fileInputRef} type="file" accept=".pdf,.docx,.doc,.txt"
                         onChange={handleFileUpload} style={{ display: 'none' }} />
                     {uploading ? (
-                        <div><div className="spinner" style={{ margin: '0 auto 8px', width: 24, height: 24 }} /><div style={{ fontSize: 13, color: '#6C63FF' }}>解析中...</div></div>
+                        <div><div className="spinner" style={{ margin: '0 auto 8px', width: 24, height: 24 }} /><div style={{ fontSize: 13, color: 'var(--primary)' }}>解析中...</div></div>
                     ) : uploadedFile ? (
                         <div style={{ overflow: 'hidden' }}>
                             <span style={{ fontSize: 20 }}>📄</span>
-                            <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%', padding: '0 8px' }}>{uploadedFile.name}</div>
-                            <div style={{ fontSize: 11, color: '#94a3b8' }}>已提取 {uploadedFile.length} 字 · 点击重新上传</div>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%', padding: '0 8px' }}>{uploadedFile.name}</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>已提取 {uploadedFile.length} 字 · 点击重新上传</div>
                         </div>
                     ) : (
-                        <div><span style={{ fontSize: 24 }}>📁</span><div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>上传文件</div><div style={{ fontSize: 11, color: '#94a3b8' }}>PDF / Word / TXT</div></div>
+                        <div><span style={{ fontSize: 24 }}>📁</span><div style={{ fontSize: 13, fontWeight: 600, marginTop: 4, color: 'var(--text-primary)' }}>上传文件</div><div style={{ fontSize: 11, color: 'var(--text-muted)' }}>PDF / Word / TXT</div></div>
                     )}
                 </div>
                 <textarea value={input} onChange={e => setInput(e.target.value)}
                     placeholder="上传文件自动提取文本，或手动输入内容..."
                     style={{
-                        width: '100%', minHeight: 80, maxHeight: 160, border: '1px solid #e2e8f0',
+                        width: '100%', minHeight: 80, maxHeight: 160, border: '1px solid var(--border-color)',
                         borderRadius: 12, padding: 12, fontSize: 14, fontFamily: 'inherit',
-                        resize: 'vertical', outline: 'none', boxSizing: 'border-box'
+                        resize: 'vertical', outline: 'none', boxSizing: 'border-box',
+                        background: 'var(--input-bg)', color: 'var(--text-primary)'
                     }} />
             </div>
 
             {/* 功能选择 2x3 网格 */}
             <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#64748b', marginBottom: 10, textAlign: 'left' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 10, textAlign: 'left' }}>
                     🎯 选择 AI 功能
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
                     {actions.map(a => (
                         <button key={a.key} onClick={() => !loading && executeAction(a.key)} disabled={loading}
                             style={{
-                                background: 'white', border: `1px solid ${activeAction === a.key ? a.color : '#e2e8f0'}`,
+                                background: 'var(--bg-card)', border: `1px solid ${activeAction === a.key ? a.color : 'var(--border-color)'}`,
                                 borderRadius: 12, padding: '12px 6px', cursor: loading ? 'wait' : 'pointer',
                                 textAlign: 'center', transition: 'all 0.2s', fontFamily: 'inherit',
                                 opacity: loading && activeAction !== a.key ? 0.5 : 1,
                                 boxShadow: activeAction === a.key ? `0 2px 12px ${a.color}20` : 'none'
                             }}>
                             <div style={{ fontSize: 22, marginBottom: 4 }}>{a.icon}</div>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: '#1e293b' }}>{a.title}</div>
-                            <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>{a.desc}</div>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{a.title}</div>
+                            <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{a.desc}</div>
                         </button>
                     ))}
                 </div>
@@ -326,19 +327,19 @@ export default function AI() {
 
             {/* 处理中 */}
             {loading && (
-                <div style={{ textAlign: 'center', padding: 24, background: 'white', borderRadius: 14, border: '1px solid #e2e8f0' }}>
+                <div style={{ textAlign: 'center', padding: 24, background: 'var(--bg-card)', borderRadius: 14, border: '1px solid var(--border-color)' }}>
                     <div className="spinner" style={{ margin: '0 auto 12px' }} />
-                    <div style={{ color: '#6C63FF', fontSize: 14, fontWeight: 500 }}>AI 正在处理中...</div>
+                    <div style={{ color: 'var(--primary)', fontSize: 14, fontWeight: 500 }}>AI 正在处理中...</div>
                 </div>
             )}
 
             {/* 思维导图结果 */}
             {mindmapData && !loading && (
                 <div style={{
-                    background: 'white', borderRadius: 14, padding: 16,
-                    border: '1px solid #e2e8f0', marginBottom: 12, textAlign: 'left'
+                    background: 'var(--bg-card)', borderRadius: 14, padding: 16,
+                    border: '1px solid var(--border-color)', marginBottom: 12, textAlign: 'left'
                 }}>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: '#1e293b', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
                         🧠 思维导图
                     </div>
                     <MindMapView data={mindmapData} />
@@ -348,10 +349,10 @@ export default function AI() {
             {/* 知识图谱结果 */}
             {graphData && !loading && (
                 <div style={{
-                    background: 'white', borderRadius: 14, padding: 16,
-                    border: '1px solid #e2e8f0', marginBottom: 12, textAlign: 'left'
+                    background: 'var(--bg-card)', borderRadius: 14, padding: 16,
+                    border: '1px solid var(--border-color)', marginBottom: 12, textAlign: 'left'
                 }}>
-                    <div style={{ fontSize: 15, fontWeight: 600, color: '#1e293b', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
                         🔗 知识图谱
                     </div>
                     <KnowledgeGraphView data={graphData} />

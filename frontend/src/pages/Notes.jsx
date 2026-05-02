@@ -82,94 +82,22 @@ function BackupMenu() {
     <div ref={menuRef} style={{ position: 'relative' }}>
       {/* 紫色三点按钮 */}
       <button
+        type="button"
         onClick={() => setMenuOpen(!menuOpen)}
         disabled={restoring}
-        style={{
-            width: '32px',
-            height: '32px',
-            border: '1px solid #7c3aed', // 紫色边框
-            borderRadius: '7px',
-            background: '#7c3aed',
-            color: 'white',
-            fontWeight:'bolder',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '22px',
-            marginLeft: '8px'
-        }}
-        onMouseEnter={(e) => {
-            e.target.style.background = '#51289f'
-        } }
-        onMouseLeave={(e) => {
-            e.target.style.background = '#7c3aed'
-        }}
+        className="backup-menu-trigger"
       >
         ⋮
       </button>
 
       {/* 下拉菜单 */}
       {menuOpen && (
-        <div style={{
-          position: 'absolute',
-          top: 'calc(100% + 6px)',
-          right: 0,
-          background: '#fff',
-          border: '1px solid #e5e7eb',
-          borderRadius: '15px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-          width: '160px',
-          zIndex: 999
-        }}>
-          <button
-            onClick={handleBackup}
-            style={{
-                width: '100%',
-                padding: '10px 12px',
-                textAlign: 'left',
-                border: 'none',
-                background: 'none',
-                cursor: 'pointer',
-                fontSize: '14px',
-                display:'flex',
-                justifyContent:'center',
-            }}
-            onMouseOver={(e) => {
-                e.target.style.background = '#f8fafc';
-                e.target.style.borderTopLeftRadius = '15px'
-                e.target.style.borderTopRightRadius = '15px'
-            }}
-            onMouseLeave={(e) => {
-                e.target.style.background = '#fff';
-            }}
-          >
+        <div className="backup-menu-panel">
+          <button type="button" className="backup-menu-item" onClick={handleBackup}>
             🔐 备份全部笔记
           </button>
-            <div style={{
-                padding:'1px',
-                margin:'0 20px',
-                background :'#e1eaf4'
-            }}></div>
-          <label style={{
-              width: '100%',
-              display: 'flex',
-              padding: '10px 12px',
-              alignItems:'center',
-              justifyContent:'center',
-              cursor: 'pointer',
-              fontSize: '14px'
-          }}
-            onMouseOver={(e) => {
-                e.target.style.background = '#f8fafc'
-                e.target.style.borderBottomRightRadius = '15px';
-                e.target.style.borderBottomLeftRadius = '15px'
-            }}
-            onMouseLeave={(e) => {
-                e.target.style.background = '#fff'
-            }}
-
-          >
+          <div className="backup-menu-sep" />
+          <label className="backup-menu-item">
             {restoring ? '♻️ 恢复中...' : '♻️ 从备份恢复'}
             <input
               type="file"
@@ -235,7 +163,7 @@ export default function Notes() {
             }}>
                 <h1 className="page-title-text">我的笔记</h1>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: 13, color: '#94a3b8' }}>{notes.length} 条</span>
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{notes.length} 条</span>
                     <BackupMenu />
                 </div>
             </div>
@@ -267,7 +195,7 @@ export default function Notes() {
                         <div className="note-card-footer">
                             <div className="note-card-tags">
                                 <span className="tag-badge">{note.category}</span>
-                                {note.is_voice ? <span className="tag-badge" style={{ background: '#fef3c7', color: '#d97706' }}>🎤</span> : null}
+                                {note.is_voice ? <span className="tag-badge tag-badge-voice">🎤</span> : null}
                             </div>
                             <span className="note-card-time">{new Date(note.updated_at || note.created_at).toLocaleDateString()}</span>
                         </div>

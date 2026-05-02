@@ -417,23 +417,23 @@ export default function Home() {
 
             {transcript && !recording && (
                 <div style={{
-                    marginTop: 16, padding: 14, background: 'rgba(255,255,255,0.75)',
+                    marginTop: 16, padding: 14, background: 'var(--transcript-panel-bg)',
                     backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-                    borderRadius: 14, fontSize: 14, color: '#5a4a3a', width: '100%',
-                    border: '1px solid rgba(255,255,255,0.6)', textAlign: 'left',
+                    borderRadius: 14, fontSize: 14, color: 'var(--transcript-text)', width: '100%',
+                    border: '1px solid var(--transcript-panel-border)', textAlign: 'left',
                     boxShadow: '0 4px 16px rgba(180,140,120,0.1)'
                 }}>
-                    <div style={{ fontSize: 12, color: '#9b7dbd', fontWeight: 600, marginBottom: 6 }}>🎤 语音识别结果</div>
+                    <div style={{ fontSize: 12, color: 'var(--transcript-label)', fontWeight: 600, marginBottom: 6 }}>🎤 语音识别结果</div>
                     {transcript}
                 </div>
             )}
 
             {autoSchedulesInfo && (
                 <div style={{
-                    marginTop: 12, padding: 12, background: 'rgba(236, 253, 245, 0.8)',
+                    marginTop: 12, padding: 12, background: 'var(--auto-schedule-bg)',
                     backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-                    borderRadius: 14, fontSize: 13, color: '#065f46', width: '100%',
-                    border: '1px solid rgba(16, 185, 129, 0.25)', textAlign: 'left',
+                    borderRadius: 14, fontSize: 13, color: 'var(--auto-schedule-text)', width: '100%',
+                    border: '1px solid var(--auto-schedule-border)', textAlign: 'left',
                     boxShadow: '0 4px 16px rgba(16, 185, 129, 0.08)'
                 }}>
                     <div style={{ fontWeight: 700, marginBottom: 6 }}>🔔 已自动创建提醒</div>
@@ -462,7 +462,7 @@ export default function Home() {
                             <div className="note-card-footer">
                                 <div className="note-card-tags">
                                     <span className="tag-badge">{note.category}</span>
-                                    {note.is_voice ? <span className="tag-badge" style={{ background: '#fef3c7', color: '#d97706' }}>🎤 语音</span> : null}
+                                    {note.is_voice ? <span className="tag-badge tag-badge-voice">🎤 语音</span> : null}
                                 </div>
                                 <span className="note-card-time">{new Date(note.created_at).toLocaleDateString()}</span>
                             </div>

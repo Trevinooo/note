@@ -331,7 +331,7 @@ export default function Schedule() {
                     <div className={`schedule-title ${s.status === 'done' ? 'done' : ''}`}>{s.title}</div>
                     <div className="schedule-time" style={{ display: 'flex', gap: 8 }}>
                         {s.start_time ? (s.start_time.substring(11, 16) || '全天') : '未设置时间'}
-                        <span style={{ color: '#64748b' }}>{getRepeatLabel(s)}</span>
+                        <span style={{ color: 'var(--text-secondary)' }}>{getRepeatLabel(s)}</span>
                     </div>
                 </div>
                 {s.source === 'ai_extract' && <span className="schedule-source-badge">AI</span>}
@@ -357,41 +357,41 @@ export default function Schedule() {
             {/* 智能提醒横幅 */}
             {reminders.length > 0 && showReminders && (
                 <div style={{
-                    background: 'linear-gradient(135deg, #fffbeb, #fef3c7)',
+                    background: 'var(--schedule-reminder-bg)',
                     borderRadius: 14, padding: 14, marginBottom: 16,
-                    border: '1px solid #fde68a', textAlign: 'left'
+                    border: '1px solid var(--schedule-reminder-border)', textAlign: 'left'
                 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#92400e' }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--schedule-reminder-heading)' }}>
                             🔔 智能提醒 · {reminders.length} 项即将到来
                         </span>
-                        <button onClick={() => setShowReminders(false)} style={{
+                        <button type="button" onClick={() => setShowReminders(false)} style={{
                             background: 'none', border: 'none', cursor: 'pointer',
-                            fontSize: 16, color: '#92400e', padding: 0
+                            fontSize: 16, color: 'var(--schedule-reminder-heading)', padding: 0
                         }}>×</button>
                     </div>
                     {reminders.slice(0, 3).map(r => (
                         <div key={r.id} style={{
                             display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0',
-                            borderTop: '1px solid #fde68a20'
+                            borderTop: '1px solid var(--schedule-reminder-border)'
                         }}>
                             <span style={{
-                                fontSize: 11, background: '#f59e0b', color: 'white',
+                                fontSize: 11, background: 'var(--warning)', color: '#fff',
                                 padding: '2px 8px', borderRadius: 10, fontWeight: 600, flexShrink: 0
                             }}>
                                 {getTimeRemaining(getReminderTime(r))}
                             </span>
-                            <span style={{ fontSize: 13, color: '#78350f', fontWeight: 500 }}>{r.title}</span>
+                            <span style={{ fontSize: 13, color: 'var(--schedule-reminder-text)', fontWeight: 500 }}>{r.title}</span>
                         </div>
                     ))}
                 </div>
             )}
 
-            <div style={{ background: 'white', borderRadius: 16, padding: 16, marginBottom: 16, border: '1px solid #e2e8f0' }}>
+            <div style={{ background: 'var(--bg-card)', borderRadius: 16, padding: 16, marginBottom: 16, border: '1px solid var(--border-color)' }}>
                 <div className="calendar-header">
-                    <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16 }} onClick={() => setCurrentMonth(new Date(year, month - 1))}>◀</button>
+                    <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--text-primary)' }} onClick={() => setCurrentMonth(new Date(year, month - 1))}>◀</button>
                     <span className="calendar-month">{year}年{month + 1}月</span>
-                    <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16 }} onClick={() => setCurrentMonth(new Date(year, month + 1))}>▶</button>
+                    <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'var(--text-primary)' }} onClick={() => setCurrentMonth(new Date(year, month + 1))}>▶</button>
                 </div>
                 <div className="calendar-grid">
                     {dayLabels.map(d => <div key={d} className="calendar-day-label">{d}</div>)}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api, { getUser, clearAuth, setAuth, updateUser } from '../api'
+import { getTheme, setTheme } from '../theme'
 
 export default function Profile() {
     const navigate = useNavigate()
@@ -78,6 +79,7 @@ export default function Profile() {
     const [newPassword, setNewPassword] = useState('')
     const [editMsg, setEditMsg] = useState('')
     const [editSaving, setEditSaving] = useState(false)
+    const [darkMode, setDarkMode] = useState(() => getTheme() === 'dark')
 
     function openEditModal() {
         setEditUsername(user?.username || '')
@@ -123,12 +125,29 @@ export default function Profile() {
                 <div className="profile-role">{roleMap[user?.role] || '普通用户'}</div>
             </div>
 
+            <div className="profile-section">
+                <div className="profile-theme-row">
+                    <span>深色模式</span>
+                    <button
+                        type="button"
+                        className={`theme-switch${darkMode ? ' is-dark' : ''}`}
+                        role="switch"
+                        aria-label="深色模式"
+                        aria-checked={darkMode}
+                        title="切换浅色/深色"
+                        onClick={() => {
+                            const next = darkMode ? 'light' : 'dark'
+                            setTheme(next)
+                            setDarkMode(next === 'dark')
+                        }}
+                    />
+                </div>
+            </div>
+
             {/* 会员状态卡片 */}
             <div className="profile-section" style={{
-                background: isPremium
-                    ? 'linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fbbf24 100%)'
-                    : 'linear-gradient(135deg, #f8f9ff 0%, #eef2ff 100%)',
-                border: isPremium ? '1px solid #f59e0b' : '1px solid #d4dff7',
+                background: isPremium ? 'var(--profile-card-premium)' : 'var(--profile-card-normal)',
+                border: isPremium ? '1px solid var(--profile-card-border-premium)' : '1px solid var(--profile-card-border-normal)',
                 position: 'relative',
                 overflow: 'hidden'
             }}>
@@ -144,13 +163,13 @@ export default function Profile() {
                     <div>
                         <div style={{
                             fontSize: 16, fontWeight: 700,
-                            color: isPremium ? '#92400e' : '#1e293b'
+                            color: isPremium ? 'var(--profile-premium-title)' : 'var(--profile-normal-title)'
                         }}>
                             {isPremium ? '高级会员' : '普通用户'}
                         </div>
                         <div style={{
                             fontSize: 12,
-                            color: isPremium ? '#a16207' : '#64748b',
+                            color: isPremium ? 'var(--profile-premium-sub)' : 'var(--profile-normal-sub)',
                             marginTop: 2
                         }}>
                             {isPremium ? '无限次 AI 功能使用' : `AI 功能已使用 ${aiUsage.used}/${aiUsage.limit} 次`}
@@ -191,17 +210,17 @@ export default function Profile() {
             <div className="profile-section">
                 <div className="profile-section-title">数据统计</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-                    <div style={{ textAlign: 'center', padding: 16, background: '#f8f9ff', borderRadius: 12 }}>
-                        <div style={{ fontSize: 28, fontWeight: 700, color: '#6C63FF' }}>{noteCount}</div>
-                        <div style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>笔记数</div>
+                    <div style={{ textAlign: 'center', padding: 16, background: 'var(--stat-note-bg)', borderRadius: 12 }}>
+                        <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--primary)' }}>{noteCount}</div>
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>笔记数</div>
                     </div>
-                    <div style={{ textAlign: 'center', padding: 16, background: '#f0fdf4', borderRadius: 12 }}>
-                        <div style={{ fontSize: 28, fontWeight: 700, color: '#10b981' }}>{scheduleCount}</div>
-                        <div style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>日程数</div>
+                    <div style={{ textAlign: 'center', padding: 16, background: 'var(--stat-schedule-bg)', borderRadius: 12 }}>
+                        <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--success)' }}>{scheduleCount}</div>
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>日程数</div>
                     </div>
-                    <div style={{ textAlign: 'center', padding: 16, background: '#fef3c7', borderRadius: 12 }}>
-                        <div style={{ fontSize: 28, fontWeight: 700, color: '#f59e0b' }}>{aiUsage.used}</div>
-                        <div style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>AI 使用</div>
+                    <div style={{ textAlign: 'center', padding: 16, background: 'var(--stat-ai-bg)', borderRadius: 12 }}>
+                        <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--warning)' }}>{aiUsage.used}</div>
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>AI 使用</div>
                     </div>
                 </div>
             </div>
@@ -214,7 +233,7 @@ export default function Profile() {
                             {tag.name}
                         </span>
                     ))}
-                    {tags.length === 0 && <span style={{ color: '#94a3b8', fontSize: 13 }}>暂无标签</span>}
+                    {tags.length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>暂无标签</span>}
                 </div>
             </div>
 
@@ -258,7 +277,7 @@ export default function Profile() {
                     zIndex: 9999, padding: 20, animation: 'fadeIn 0.3s ease'
                 }} onClick={() => !editSaving && setShowEditModal(false)}>
                     <div onClick={e => e.stopPropagation()} style={{
-                        background: '#fff', borderRadius: 20, width: '100%', maxWidth: 360,
+                        background: 'var(--bg-card)', borderRadius: 20, width: '100%', maxWidth: 360,
                         overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
                         animation: 'modalIn 0.3s ease'
                     }}>
@@ -272,31 +291,31 @@ export default function Profile() {
 
                         <div style={{ padding: '20px' }}>
                             <div style={{ marginBottom: 14 }}>
-                                <div style={{ fontSize: 13, fontWeight: 500, color: '#64748b', marginBottom: 6 }}>用户名</div>
+                                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>用户名</div>
                                 <input className="form-input" style={{ margin: 0, fontSize: 14 }}
                                     value={editUsername} onChange={e => setEditUsername(e.target.value)}
                                     placeholder="输入新用户名" />
                             </div>
                             <div style={{ marginBottom: 14 }}>
-                                <div style={{ fontSize: 13, fontWeight: 500, color: '#64748b', marginBottom: 6 }}>昵称</div>
+                                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>昵称</div>
                                 <input className="form-input" style={{ margin: 0, fontSize: 14 }}
                                     value={editNickname} onChange={e => setEditNickname(e.target.value)}
                                     placeholder="输入昵称" />
                             </div>
                             <div style={{
-                                height: 1, background: '#e2e8f0', margin: '16px 0',
+                                height: 1, background: 'var(--divider-strong)', margin: '16px 0',
                             }} />
-                            <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 12 }}>
+                            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
                                 如需修改密码，请填写以下内容（不修改则留空）
                             </div>
                             <div style={{ marginBottom: 14 }}>
-                                <div style={{ fontSize: 13, fontWeight: 500, color: '#64748b', marginBottom: 6 }}>原密码</div>
+                                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>原密码</div>
                                 <input className="form-input" type="password" style={{ margin: 0, fontSize: 14 }}
                                     value={oldPassword} onChange={e => setOldPassword(e.target.value)}
                                     placeholder="输入原密码" />
                             </div>
                             <div style={{ marginBottom: 16 }}>
-                                <div style={{ fontSize: 13, fontWeight: 500, color: '#64748b', marginBottom: 6 }}>新密码</div>
+                                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>新密码</div>
                                 <input className="form-input" type="password" style={{ margin: 0, fontSize: 14 }}
                                     value={newPassword} onChange={e => setNewPassword(e.target.value)}
                                     placeholder="输入新密码" />
@@ -305,8 +324,8 @@ export default function Profile() {
                             {editMsg && (
                                 <div style={{
                                     padding: '10px 14px', borderRadius: 10, marginBottom: 12,
-                                    background: editMsg.includes('✅') ? '#ecfdf5' : '#fef2f2',
-                                    color: editMsg.includes('✅') ? '#059669' : '#dc2626',
+                                    background: editMsg.includes('✅') ? 'var(--msg-success-bg)' : 'var(--msg-error-bg)',
+                                    color: editMsg.includes('✅') ? 'var(--success)' : 'var(--danger)',
                                     fontSize: 13, textAlign: 'center', fontWeight: 500
                                 }}>
                                     {editMsg}
@@ -315,7 +334,7 @@ export default function Profile() {
 
                             <button onClick={handleSaveProfile} disabled={editSaving} style={{
                                 width: '100%', padding: '13px 0', borderRadius: 14, border: 'none',
-                                background: editSaving ? '#d4d4d4' : 'linear-gradient(135deg, #6C63FF, #00D2FF)',
+                                background: editSaving ? 'var(--btn-disabled-bg)' : 'linear-gradient(135deg, #6C63FF, #00D2FF)',
                                 color: '#fff', fontSize: 15, fontWeight: 700,
                                 cursor: editSaving ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
                                 boxShadow: editSaving ? 'none' : '0 4px 15px rgba(108,99,255,0.3)',
@@ -326,7 +345,7 @@ export default function Profile() {
 
                             <button onClick={() => setShowEditModal(false)} style={{
                                 width: '100%', padding: '10px 0', marginTop: 8, border: 'none',
-                                background: 'transparent', color: '#94a3b8', fontSize: 13,
+                                background: 'transparent', color: 'var(--text-muted)', fontSize: 13,
                                 cursor: 'pointer', fontFamily: 'inherit'
                             }}>
                                 取消
@@ -346,7 +365,7 @@ export default function Profile() {
                     zIndex: 9999, padding: 20, animation: 'fadeIn 0.3s ease'
                 }} onClick={() => !upgrading && setShowUpgradeModal(false)}>
                     <div onClick={e => e.stopPropagation()} style={{
-                        background: '#fff', borderRadius: 20, width: '100%', maxWidth: 360,
+                        background: 'var(--bg-card)', borderRadius: 20, width: '100%', maxWidth: 360,
                         overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
                         animation: 'modalIn 0.3s ease'
                     }}>
@@ -368,7 +387,7 @@ export default function Profile() {
                         <div style={{ padding: '24px' }}>
                             {/* 权益对比 */}
                             <div style={{ marginBottom: 20 }}>
-                                <div style={{ fontSize: 14, fontWeight: 600, color: '#1e293b', marginBottom: 12 }}>
+                                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>
                                     会员权益
                                 </div>
                                 {[
@@ -380,13 +399,13 @@ export default function Profile() {
                                 ].map((item, i) => (
                                     <div key={i} style={{
                                         display: 'flex', alignItems: 'center', padding: '8px 0',
-                                        borderBottom: i < 5 ? '1px solid #f1f5f9' : 'none',
+                                        borderBottom: i < 5 ? '1px solid var(--border-color)' : 'none',
                                         fontSize: 13
                                     }}>
                                         <span style={{ width: 28 }}>{item.icon}</span>
-                                        <span style={{ flex: 1, color: '#374151' }}>{item.text}</span>
+                                        <span style={{ flex: 1, color: 'var(--text-primary)' }}>{item.text}</span>
                                         <span style={{
-                                            color: '#94a3b8', fontSize: 12, width: 50, textAlign: 'center',
+                                            color: 'var(--text-muted)', fontSize: 12, width: 50, textAlign: 'center',
                                             textDecoration: 'line-through'
                                         }}>{item.free}</span>
                                         <span style={{
@@ -413,8 +432,8 @@ export default function Profile() {
                             {upgradeMsg && (
                                 <div style={{
                                     padding: '10px 14px', borderRadius: 10, marginBottom: 12,
-                                    background: upgradeMsg.includes('成功') ? '#ecfdf5' : '#fef2f2',
-                                    color: upgradeMsg.includes('成功') ? '#059669' : '#dc2626',
+                                    background: upgradeMsg.includes('成功') ? 'var(--msg-success-bg)' : 'var(--msg-error-bg)',
+                                    color: upgradeMsg.includes('成功') ? 'var(--success)' : 'var(--danger)',
                                     fontSize: 13, textAlign: 'center', fontWeight: 500
                                 }}>
                                     {upgradeMsg}
@@ -423,8 +442,8 @@ export default function Profile() {
 
                             <button onClick={handleUpgrade} disabled={upgrading} style={{
                                 width: '100%', padding: '14px 0', borderRadius: 14, border: 'none',
-                                background: upgrading ? '#d4d4d4' : 'linear-gradient(135deg, #f59e0b, #eab308)',
-                                color: upgrading ? '#9ca3af' : '#fff', fontSize: 16, fontWeight: 700,
+                                background: upgrading ? 'var(--btn-disabled-bg)' : 'linear-gradient(135deg, #f59e0b, #eab308)',
+                                color: upgrading ? 'var(--text-muted)' : '#fff', fontSize: 16, fontWeight: 700,
                                 cursor: upgrading ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
                                 boxShadow: upgrading ? 'none' : '0 6px 20px rgba(245,158,11,0.35)',
                                 transition: 'all 0.3s ease'
@@ -434,7 +453,7 @@ export default function Profile() {
 
                             <button onClick={() => setShowUpgradeModal(false)} style={{
                                 width: '100%', padding: '10px 0', marginTop: 8, border: 'none',
-                                background: 'transparent', color: '#94a3b8', fontSize: 13,
+                                background: 'transparent', color: 'var(--text-muted)', fontSize: 13,
                                 cursor: 'pointer', fontFamily: 'inherit'
                             }}>
                                 暂不开通

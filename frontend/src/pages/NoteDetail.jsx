@@ -14,7 +14,7 @@ function MindMapView({ data, level = 0 }) {
                 <span style={{
                     fontSize: level === 0 ? 15 : level === 1 ? 13 : 12,
                     fontWeight: level <= 1 ? 600 : 400,
-                    color: level === 0 ? '#1e293b' : level === 1 ? '#374151' : '#64748b'
+                    color: level === 0 ? 'var(--text-primary)' : level === 1 ? 'var(--text-primary)' : 'var(--text-secondary)'
                 }}>{data.title}</span>
             </div>
             {level === 0 && <div style={{ height: 1, background: `linear-gradient(90deg, ${color}, transparent)`, margin: '3px 0 6px' }} />}
@@ -30,13 +30,13 @@ function UpgradeModal({ show, onClose, navigate }) {
     return (
         <div style={{
             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)',
+            background: 'var(--modal-overlay)', backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             zIndex: 9999, padding: 20
         }} onClick={onClose}>
             <div onClick={e => e.stopPropagation()} style={{
-                background: '#fff', borderRadius: 20, width: '100%', maxWidth: 340,
+                background: 'var(--bg-card)', borderRadius: 20, width: '100%', maxWidth: 340,
                 overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
                 animation: 'modalIn 0.3s ease'
             }}>
@@ -62,7 +62,7 @@ function UpgradeModal({ show, onClose, navigate }) {
                     </button>
                     <button onClick={onClose} style={{
                         width: '100%', padding: '10px 0', marginTop: 8, border: 'none',
-                        background: 'transparent', color: '#94a3b8', fontSize: 13,
+                        background: 'transparent', color: 'var(--text-muted)', fontSize: 13,
                         cursor: 'pointer', fontFamily: 'inherit'
                     }}>稍后再说</button>
                 </div>
@@ -243,8 +243,8 @@ export default function NoteDetail() {
                             position: 'absolute',
                             right: 0,
                             top: 38,
-                            background: '#fff',
-                            border: '1px solid #e5e7eb',
+                            background: 'var(--bg-card)',
+                            border: '1px solid var(--border-color)',
                             borderRadius: 12,
                             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
                             minWidth: 180,
@@ -262,14 +262,14 @@ export default function NoteDetail() {
                 <button className="btn btn-sm btn-outline" onClick={saveNote} disabled={saving}>
                     {saving ? '保存中...' : '💾 保存'}
                 </button>
-                <button className="btn btn-sm" style={{ background: '#fef2f2', color: '#ef4444', border: 'none' }} onClick={deleteNote}>🗑️</button>
+                <button className="btn btn-sm" style={{ background: 'var(--logout-bg)', color: 'var(--danger)', border: 'none' }} onClick={deleteNote}>🗑️</button>
             </div>
 
             <input className="note-title-input" value={title} onChange={e => setTitle(e.target.value)} placeholder="笔记标题" />
 
             <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
                 <span className="tag-badge">{category}</span>
-                {note.is_voice ? <span className="tag-badge" style={{ background: '#fef3c7', color: '#d97706' }}>🎤 语音记录</span> : null}
+                {note.is_voice ? <span className="tag-badge tag-badge-voice">🎤 语音记录</span> : null}
             </div>
 
             <textarea className="note-content-area" value={content} onChange={e => setContent(e.target.value)} placeholder="写下你的想法..." />
@@ -277,7 +277,7 @@ export default function NoteDetail() {
             {/* 六个 AI 功能 - 圆润卡片网格 */}
             <div style={{ marginTop: 16, marginBottom: 12 }}>
                 <div style={{
-                    fontSize: 13, fontWeight: 600, color: '#64748b', marginBottom: 10,
+                    fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 10,
                     display: 'flex', alignItems: 'center', gap: 6
                 }}>
                     <span style={{ fontSize: 16 }}>🤖</span> AI 智能功能
@@ -288,8 +288,8 @@ export default function NoteDetail() {
                             style={{
                                 background: aiLoading === a.key
                                     ? `linear-gradient(135deg, ${a.color}15, ${a.color}08)`
-                                    : 'white',
-                                border: `1.5px solid ${aiLoading === a.key ? a.color : '#e8ecf1'}`,
+                                    : 'var(--bg-card)',
+                                border: `1.5px solid ${aiLoading === a.key ? a.color : 'var(--border-color)'}`,
                                 borderRadius: 14, padding: '10px 6px',
                                 cursor: aiLoading ? 'wait' : 'pointer',
                                 textAlign: 'center', transition: 'all 0.25s ease',
@@ -301,7 +301,7 @@ export default function NoteDetail() {
                             <div style={{ fontSize: 20, marginBottom: 3 }}>
                                 {aiLoading === a.key ? '⏳' : a.icon}
                             </div>
-                            <div style={{ fontSize: 11, fontWeight: 600, color: '#374151' }}>{a.label}</div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)' }}>{a.label}</div>
                         </button>
                     ))}
                 </div>
@@ -311,22 +311,22 @@ export default function NoteDetail() {
             {aiLoading && (
                 <div style={{
                     textAlign: 'center', padding: 18,
-                    background: 'linear-gradient(135deg, #f8f9ff, #f0f4ff)',
-                    borderRadius: 14, border: '1px solid #e2e8f0', marginBottom: 12
+                    background: 'var(--summary-gradient)',
+                    borderRadius: 14, border: '1px solid var(--summary-border-color)', marginBottom: 12
                 }}>
                     <div className="spinner" style={{ margin: '0 auto 10px', width: 22, height: 22 }} />
-                    <div style={{ color: '#6C63FF', fontSize: 13, fontWeight: 500 }}>AI 分析中...</div>
+                    <div style={{ color: 'var(--primary)', fontSize: 13, fontWeight: 500 }}>AI 分析中...</div>
                 </div>
             )}
 
             {/* 思维导图结果 */}
             {mindmapData && !aiLoading && (
                 <div style={{
-                    background: 'white', borderRadius: 16, padding: 16,
-                    border: '1px solid #e2e8f0', marginBottom: 12, textAlign: 'left',
+                    background: 'var(--bg-card)', borderRadius: 16, padding: 16,
+                    border: '1px solid var(--border-color)', marginBottom: 12, textAlign: 'left',
                     boxShadow: '0 2px 8px rgba(108,99,255,0.08)'
                 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: '#1e293b', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                         🧠 思维导图
                     </div>
                     <MindMapView data={mindmapData} />
@@ -337,11 +337,11 @@ export default function NoteDetail() {
             {/* AI 文字结果 */}
             {aiResult && !aiLoading && !mindmapData && !graphData && (
                 <div style={{
-                    background: aiResult.startsWith('❌') ? '#fef2f2' : 'linear-gradient(135deg, #f0fdf4, #ecfdf5)',
+                    background: aiResult.startsWith('❌') ? 'var(--msg-error-bg)' : 'var(--stat-schedule-bg)',
                     borderRadius: 14, padding: 14,
-                    border: `1px solid ${aiResult.startsWith('❌') ? '#fecaca' : '#bbf7d0'}`,
+                    border: `1px solid ${aiResult.startsWith('❌') ? 'rgba(248,113,113,0.45)' : 'var(--auto-schedule-border)'}`,
                     marginBottom: 12, fontSize: 13, lineHeight: 1.6,
-                    color: aiResult.startsWith('❌') ? '#dc2626' : '#15803d',
+                    color: aiResult.startsWith('❌') ? 'var(--danger)' : 'var(--success)',
                     whiteSpace: 'pre-wrap'
                 }}>
                     {aiResult}
